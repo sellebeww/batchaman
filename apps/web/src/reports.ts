@@ -82,6 +82,9 @@ export function reportRows(v: View, batches: Batch[], now: string): unknown[][] 
       'device_id',
       'prev_hash',
       'hash',
+      'duration_ms',
+      'lag_minutes',
+      'realtime_tolerance_min',
     ],
   );
   for (const e of v.events.filter((e) => batches.some((b) => b.id === e.batchId)))
@@ -104,6 +107,9 @@ export function reportRows(v: View, batches: Batch[], now: string): unknown[][] 
       e.deviceId,
       e.prevHash,
       e.hash,
+      v.metrics.find((m) => m.eventId === e.id)?.durationMs,
+      v.metrics.find((m) => m.eventId === e.id)?.lagMinutes,
+      v.batches.find((b) => b.id === e.batchId)!.threshold.realtimeToleranceMin,
     ]);
   return rows;
 }

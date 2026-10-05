@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './apps/web/e2e',
+  testMatch: process.env.DEMO_TEST === '1' ? '**/demo.spec.ts' : '**/app.spec.ts',
   fullyParallel: false,
   use: {
     baseURL: 'http://127.0.0.1:4173',

@@ -51,3 +51,17 @@ test('AC-01 two taps from selected batch, AC-02 automatic time, AC-13 warning', 
   expect(screen.getByText(t.warning)).toBeTruthy();
   await waitFor(() => expect(v.metrics[0]!.durationMs).toBeGreaterThanOrEqual(0));
 });
+test('AC-08 onboarding requests persistent storage and shows daily backup reminder', async () => {
+  vi.stubGlobal('scrollTo', vi.fn());
+  const persist = vi.fn().mockResolvedValue(false);
+  Object.defineProperty(navigator, 'storage', { configurable: true, value: { persist } });
+  render(<App />);
+  fireEvent.change(await screen.findByLabelText(t.kitchenName), {
+    target: { value: 'Dapur Sintetis' },
+  });
+  fireEvent.change(screen.getByLabelText(t.kitchenCode), { target: { value: 'SYN' } });
+  fireEvent.click(screen.getByRole('button', { name: t.start }));
+  await screen.findByRole('heading', { name: t.today });
+  await waitFor(() => expect(persist).toHaveBeenCalledOnce());
+  expect(screen.getByText(t.backupReminder)).toBeTruthy();
+});

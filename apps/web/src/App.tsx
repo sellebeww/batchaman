@@ -570,7 +570,9 @@ export default function App() {
               <span>{t.warning}</span>
             </aside>
           )}
-          {(kitchen?.code === 'DEMO' || import.meta.env.VITE_DEMO === 'true') && <p className="demo">{t.demo}</p>}
+          {(kitchen?.code === 'DEMO' || import.meta.env.VITE_DEMO === 'true') && (
+            <p className="demo">{t.demo}</p>
+          )}
           {error && (
             <div className="error no-print" role="alert">
               {error}

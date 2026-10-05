@@ -15,3 +15,6 @@
 - D013: Apache-2.0 dipilih untuk lisensi permisif dengan grant paten eksplisit. MIT lebih ringkas tetapi tidak eksplisit soal paten; AGPL mewajibkan berbagi source untuk penggunaan jaringan dan dapat menambah friksi adopsi. Ini pilihan teknis/proyek, bukan nasihat hukum.
 - D014: Gerbang lisensi mengizinkan dual Unlicense OR Apache-2.0 dengan memilih opsi Apache-2.0. Daftar komponen disimpan tanpa path lokal.
 - D015: Lighthouse >=12 tidak memiliki kategori PWA. Performance/Accessibility tetap gerbang >=90; PWA diuji melalui manifest, kontrol SW, dan seluruh alur offline, tanpa mengarang skor.
+- D016: Agregat UNKNOWN diprioritaskan di atas OK, tetapi tetap di bawah PERHATIAN/MELEWATI_BATAS. Tujuan yang belum dapat dihitung tidak boleh tampak telah terjawab oleh tujuan lain; kelengkapan tetap terpisah.
+- D017: CSV harian menyertakan metrik pada baris event agar skrip pilot cukup menerima dua berkas (ekspor aplikasi dan checklist kertas). Entri dibatalkan dikecualikan dari metrik, koreksi tetap dihitung, lag negatif tidak memperoleh kredit real-time; pembanding hilang dilaporkan eksplisit.
+- D018: Demo Pages memakai database terpisah dan label DEMO permanen. Seed sintetis tidak menggantikan data operasional dan tidak ada data dapur nyata di bundle/repo.

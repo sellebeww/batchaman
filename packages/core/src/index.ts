@@ -252,8 +252,8 @@ export function calculate(
 export function aggregate(results: Exposure[]): { timeStatus: TimeStatus; incomplete: boolean } {
   const rank: Record<TimeStatus, number> = {
     NO_RULE: 0,
-    UNKNOWN: 1,
-    OK: 2,
+    UNKNOWN: 2,
+    OK: 1,
     PERHATIAN: 3,
     MELEWATI_BATAS: 4,
   };

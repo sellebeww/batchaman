@@ -12,20 +12,28 @@
 
 ## Audit adversarial
 
-| Serangan/kondisi | Bukti | Hasil |
-|---|---|---|
-| Dua konfirmasi bersamaan | store AC-03 + e2e rapid double tap | Satu event/metrik |
-| Undo setelah 10 detik | store AC-04 | Ditolak, gunakan supersedes |
-| Catatan dimodifikasi/disisipkan/diurut ulang | core AC-09 | Verifikasi gagal |
-| Cadangan rusak/foreign key tak ada | store + e2e restore | Data lama utuh |
-| IndexedDB penuh | unit quota + e2e full storage | Galat manusiawi, tidak memberi sukses |
-| Jam mundur | core flags + e2e backwards clock | Flag ditampilkan |
-| IndexedDB dihapus | e2e storage cleared | Onboarding + pemberitahuan pemulihan |
-| Kamera ditolak/tanpa BarcodeDetector | e2e fallback offline | Scanner lokal dimuat; kode manual tetap bekerja |
-| Jaringan dimatikan + reload | e2e complete offline flow | Dua tujuan, 7 titik, QR dan restore berfungsi |
-| Layar 320px | axe test | Overflow sumber diperbaiki |
-| Reload sebelum transaksi selesai | offline regression | Pesan sukses lama dibersihkan saat konfirmasi baru dibuka |
+| Serangan/kondisi                             | Bukti                              | Hasil                                                     |
+| -------------------------------------------- | ---------------------------------- | --------------------------------------------------------- |
+| Dua konfirmasi bersamaan                     | store AC-03 + e2e rapid double tap | Satu event/metrik                                         |
+| Undo setelah 10 detik                        | store AC-04                        | Ditolak, gunakan supersedes                               |
+| Catatan dimodifikasi/disisipkan/diurut ulang | core AC-09                         | Verifikasi gagal                                          |
+| Cadangan rusak/foreign key tak ada           | store + e2e restore                | Data lama utuh                                            |
+| IndexedDB penuh                              | unit quota + e2e full storage      | Galat manusiawi, tidak memberi sukses                     |
+| Jam mundur                                   | core flags + e2e backwards clock   | Flag ditampilkan                                          |
+| IndexedDB dihapus                            | e2e storage cleared                | Onboarding + pemberitahuan pemulihan                      |
+| Kamera ditolak/tanpa BarcodeDetector         | e2e fallback offline               | Scanner lokal dimuat; kode manual tetap bekerja           |
+| Jaringan dimatikan + reload                  | e2e complete offline flow          | Dua tujuan, 7 titik, QR dan restore berfungsi             |
+| Layar 320px                                  | axe test                           | Overflow sumber diperbaiki                                |
+| Reload sebelum transaksi selesai             | offline regression                 | Pesan sukses lama dibersihkan saat konfirmasi baru dibuka |
 
 ## Batas bukti
 
 Kamera fisik iOS, thermal printer 58mm/A6, ketahanan Safari terhadap eviction, kondisi tangan basah, sinar matahari, baterai dan Android 2GB perlu pengujian nyata. Tidak ada klaim telah diuji pada perangkat fisik. Tidak ada notifikasi saat aplikasi ditutup. Aturan kelayakan pangan belum divalidasi ahli.
+
+## Validasi akhir lokal sesudah kit pilot
+
+- `pnpm check` dan `pnpm coverage`: **100/100 tes lulus**, core **99,26% baris / 97,5% cabang / 100% fungsi**. Perbedaan persentase baris dari fase awal terjadi setelah pemformatan memperluas cabang yang belum dieksekusi ke baris terpisah; gerbang >=90% tetap lulus.
+- `pnpm e2e`: **9/9 lulus** pada build operasional terbaru.
+- `pnpm budget`: **142,16KiB gzip**, di bawah 200KiB.
+- Tambahan bukti: bunyi singkat aktif/mute, permintaan persist saat onboarding, dan analisis pilot dari CSV ekspor asli.
+- Build DEMO diuji terpisah: **1/1 smoke test lulus**, enam batch sintetis otomatis, label DEMO tetap tampil, reload offline berhasil.

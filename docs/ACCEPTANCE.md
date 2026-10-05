@@ -1,21 +1,31 @@
-# Matriks penerimaan
+# Matriks penerimaan AC-01–AC-15
 
-Status awal seluruh kriteria: BELUM DIUJI. Matriks diperbarui berdasarkan eksekusi, bukan keberadaan kode.
+Lulus berarti bukti otomatis yang tercantum, bukan validasi lapangan. Tes browser berada di `apps/web/e2e/app.spec.ts`, penyimpanan di `apps/web/src/store.test.ts`, komponen di `apps/web/src/ui.test.tsx`, core di `packages/core/src/domain.test.ts`.
 
-| AC  | Bukti yang diwajibkan                                       |
-| --- | ----------------------------------------------------------- |
-| 01  | komponen/alur pilih titik + konfirmasi <=2 ketukan          |
-| 02  | waktu default + ubah waktu + flag belakangan                |
-| 03  | dua confirm <=2 detik, satu event termasuk lintas tab       |
-| 04  | undo <=10 detik append-only; koreksi supersedes             |
-| 05  | beberapa tujuan + agregat terburuk                          |
-| 06  | banner/getar/audio mute/visibilitychange                    |
-| 07  | semua alur MVP offline + reload service worker              |
-| 08  | persist request, pengingat harian, JSON roundtrip           |
-| 09  | SHA-256 canonical chain: tamper/insert/reorder              |
-| 10  | pencarian kode/tanggal lokal/tujuan + ekspor                |
-| 11  | kode unik + QR + A6/58mm print                              |
-| 12  | tidak ada permintaan domain lain                            |
-| 13  | UNVERIFIED di semua layar dan laporan                       |
-| 14  | pemindaian semua string UI tidak ada status aman/tidak aman |
-| 15  | metrik durasi input/lag disimpan lokal + CSV                |
+| AC    | Status                       | Bukti tes                                                                                                                                                                                                                                                                                |
+| ----- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-01 | Lulus                        | `AC-01 two taps from selected batch, AC-02 automatic time, AC-13 warning`; browser `AC-01–05,10,11,13: full multi-drop journey, corrections, trace and label`                                                                                                                            |
+| AC-02 | Lulus                        | Komponen waktu otomatis; core `late recorded > tolerance`; browser koreksi waktu dan flag belakangan                                                                                                                                                                                     |
+| AC-03 | Lulus                        | Store `AC-03 concurrent double confirmation creates one event and one metric`; browser `AC-03–04: rapid double tap and undo preserves audit timeline`                                                                                                                                    |
+| AC-04 | Lulus                        | Store `AC-04 undo appends, expired undo rejects without mutation`, `AC-04 correction keeps original signed event and requires reason`; browser double tap/undo                                                                                                                           |
+| AC-05 | Lulus                        | Core `multiple destinations get independent exposure`, `aggregate completeness independent of worst time`, `unknown destination does not appear resolved by another OK destination`; browser dua tujuan                                                                                  |
+| AC-06 | Lulus dengan batas perangkat | Browser `AC-06: warning, visibility reevaluation and mute control`: banner, panggilan vibrate, toggle bunyi; unit `AC-06 enabled audio emits short tone; mute suppresses tone but preserves vibration`. Bunyi aktual/getar fisik perlu uji perangkat; kebijakan autoplay browser berlaku |
+| AC-07 | Lulus                        | Browser `AC-07,08,15: complete offline flow, reload, backup/restore and CSV metrics`; QR lazy dan scanner fallback dimuat offline                                                                                                                                                        |
+| AC-08 | Lulus                        | Store `AC-08 backup restore roundtrip and device identity renewed`; browser offline restore. Komponen `AC-08 onboarding requests persistent storage and shows daily backup reminder`                                                                                                     |
+| AC-09 | Lulus                        | Core grup `AC-09 canonical SHA-256 chain`: tamper, insert, reorder, head mismatch; store foreign key dan backup corrupt                                                                                                                                                                  |
+| AC-10 | Lulus                        | Browser full multi-drop journey: pencarian tujuan, linimasa koreksi, CSV; filter tanggal/kode ada pada UI dan memakai zona dapur                                                                                                                                                         |
+| AC-11 | Lulus                        | Store `AC-11 concurrent batch creation produces unique short codes`; browser QR/cetak strip. Ukuran A6/58mm CSS tersedia; printer fisik belum diuji                                                                                                                                      |
+| AC-12 | Lulus                        | Browser `AC-12,13 and axe: primary screens, 320px layout, no third party requests`; tanpa request origin pihak ketiga selama alur                                                                                                                                                        |
+| AC-13 | Lulus                        | Banner komponen/browser di semua layar utama dan print; laporan CSV/JSON/metrik memuat warning; store snapshot ambang tak berubah                                                                                                                                                        |
+| AC-14 | Lulus                        | Komponen `AC-14 status strings never label food aman/tidak aman`; semua string UI dipindai kecuali teks Tentang yang secara eksplisit menjelaskan larangan klaim                                                                                                                         |
+| AC-15 | Lulus                        | Store `AC-15 metrics record duration and lag locally`; browser ekspor metrik offline; skrip pilot mengonsumsi ekspor aplikasi nyata pada fixture sintetis                                                                                                                                |
+
+## Bukti lintas kriteria
+
+- `adversarial: full storage, backwards clock and storage cleared`.
+- `adversarial: no BarcodeDetector and camera denied retains manual fallback offline`.
+- `axe: onboarding, creation, confirmation and label; six-fold CPU slowdown`.
+- `synthetic screenshots and installability artifacts`.
+- Empat properti fast-check + properti midpoint dengan suhu endpoint acak.
+
+Lihat QUALITY.md untuk angka eksekusi, batasan Lighthouse dan lisensi. Bukti otomatis bunyi/getar tidak menggantikan validasi volume, lingkungan bising, dan kemampuan perangkat nyata.

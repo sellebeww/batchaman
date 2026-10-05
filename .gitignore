@@ -7,3 +7,10 @@ test-results/
 .corepack/
 .DS_Store
 *.tsbuildinfo
+.env
+.env.*
+lighthouse.json
+licenses.json
+batchaman-cadangan*.json
+batchaman-*.csv
+pilot-summary.md

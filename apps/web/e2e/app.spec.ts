@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 async function onboard(page: Page) {
@@ -159,19 +160,18 @@ test('AC-07,08,15: complete offline flow, reload, backup/restore and CSV metrics
   await page.getByRole('button', { name: 'Unduh cadangan JSON', exact: true }).last().click();
   const backup = await pending,
     path = await backup.path();
+  expect(readFileSync(path!, 'utf8')).toContain('Ambang batas belum diverifikasi oleh ahli');
   page.on('dialog', (d) => d.accept());
   await page.getByLabel('Pulihkan cadangan JSON').setInputFiles(path!);
   await expect(page.getByText('Cadangan dipulihkan.')).toBeVisible();
   const metrics = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Ekspor metrik CSV' }).click();
   expect((await metrics).suggestedFilename()).toBe('batchaman-metrik.csv');
-  await page
-    .getByLabel('Pulihkan cadangan JSON')
-    .setInputFiles({
-      name: 'broken.json',
-      mimeType: 'application/json',
-      buffer: Buffer.from('{broken'),
-    });
+  await page.getByLabel('Pulihkan cadangan JSON').setInputFiles({
+    name: 'broken.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('{broken'),
+  });
   await expect(page.getByRole('alert')).toContainText('Berkas tidak cocok');
   await page.getByRole('button', { name: 'Telusuri', exact: true }).click();
   await page.getByLabel('Cari kode, menu, atau tujuan').fill('Tujuan Sintetis B');

@@ -1,0 +1,3 @@
+batch_id,short_code,date,paper_flagged,notes
+syn-1-0-0,DEMO-20261005-01,2026-10-05,false,Contoh sintetis; hapus baris ini sebelum pilot
+syn-1-0-1,DEMO-20261005-02,2026-10-05,false,Contoh sintetis; tidak ada temuan pada checklist contoh

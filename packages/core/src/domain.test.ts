@@ -328,3 +328,9 @@ test('property measured qualifying midpoint with arbitrary endpoints never incre
       },
     ),
   ));
+test('unknown destination does not appear resolved by another OK destination', () => {
+  expect(aggregate([calc(full()), calc([ev('LOADED', 20)])])).toMatchObject({
+    timeStatus: 'UNKNOWN',
+    incomplete: true,
+  });
+});
