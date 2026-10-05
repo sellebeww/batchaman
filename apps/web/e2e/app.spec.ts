@@ -20,14 +20,16 @@ async function create(page: Page, multi = false) {
   await page.getByRole('button', { name: 'Buat batch', exact: true }).last().click();
   await expect(page.getByRole('heading', { name: 'Menu Sintetis', exact: true })).toBeVisible();
 }
-async function point(page: Page, name: string) {
-  await page.getByRole('button', { name: new RegExp(name) }).click();
+async function point(page: Page, name: string, destination = 'Tujuan Sintetis A') {
+  const label = /Tiba di tujuan|Mulai dibagikan/.test(name) ? name + '.*' + destination : name;
+  await page.getByRole('button', { name: new RegExp(label) }).click();
   await page.getByRole('button', { name: 'Konfirmasi titik', exact: true }).click();
   await expect(page.getByText('✓ Titik tercatat', { exact: true })).toBeVisible();
 }
 test('AC-01–05,10,11,13: full multi-drop journey, corrections, trace and label', async ({
   page,
 }) => {
+  await page.clock.setFixedTime(new Date('2026-10-05T00:00:00Z'));
   await onboard(page);
   await create(page, true);
   for (const name of [
@@ -38,9 +40,8 @@ test('AC-01–05,10,11,13: full multi-drop journey, corrections, trace and label
     'Mulai dibagikan',
   ])
     await point(page, name);
-  await page.getByLabel('Tujuan aktif').selectOption({ label: 'Tujuan Sintetis B' });
-  await point(page, 'Tiba di tujuan');
-  await point(page, 'Mulai dibagikan');
+  await point(page, 'Tiba di tujuan', 'Tujuan Sintetis B');
+  await point(page, 'Mulai dibagikan', 'Tujuan Sintetis B');
   await expect(page.getByText('Titik wajib lengkap · Pembagian dimulai')).toHaveCount(2);
   await page.getByRole('button', { name: 'Koreksi', exact: true }).first().click();
   await page.getByLabel('Waktu kejadian', { exact: true }).fill('2026-10-04T02:00');
@@ -147,9 +148,8 @@ test('AC-07,08,15: complete offline flow, reload, backup/restore and CSV metrics
     'Mulai dibagikan',
   ])
     await point(page, name);
-  await page.getByLabel('Tujuan aktif').selectOption({ label: 'Tujuan Sintetis B' });
-  await point(page, 'Tiba di tujuan');
-  await point(page, 'Mulai dibagikan');
+  await point(page, 'Tiba di tujuan', 'Tujuan Sintetis B');
+  await point(page, 'Mulai dibagikan', 'Tujuan Sintetis B');
   await page.reload();
   await page.getByText('Menu Sintetis', { exact: true }).click();
   await expect(page.locator('.timeline li')).toHaveCount(7);

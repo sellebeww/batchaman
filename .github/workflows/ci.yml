@@ -19,7 +19,7 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm e2e
       - run: pnpm budget
-      - run: pnpm audit --audit-level high
+      - run: pnpm audit --audit-level high --json > audit.json
       - run: pnpm licenses list --prod --json > licenses.json
       - run: node scripts/check-licenses.mjs licenses.json
       - name: Lighthouse mobile
@@ -32,6 +32,7 @@ jobs:
         with:
           name: quality-evidence
           path: |
+            audit.json
             lighthouse.json
             licenses.json
             coverage/

@@ -751,29 +751,32 @@ export default function App() {
                   </div>
                   <section className="panel no-print">
                     <h2>{t.choosePoint}</h2>
-                    {batchDrops.length > 1 && (
-                      <Field label={t.chooseDrop}>
-                        <select value={dropId} onChange={(e) => setDropId(e.target.value)}>
-                          {batchDrops.map((d) => (
-                            <option key={d.id} value={d.id}>
-                              {d.recipientLabel}
-                            </option>
-                          ))}
-                        </select>
-                      </Field>
-                    )}
                     <div className="point-grid">
-                      {EVENT_TYPES.map((type, i) => {
+                      {[
+                        ...EVENT_TYPES.slice(0, 3).map((type) => ({ type, drop: undefined })),
+                        ...batchDrops.flatMap((drop) =>
+                          (['ARRIVED', 'SERVE_START'] as const).map((type) => ({ type, drop })),
+                        ),
+                      ].map(({ type, drop }) => {
                         const recorded = currentEvents.some(
-                          (e) =>
-                            e.batchId === batch.id &&
-                            e.type === type &&
-                            (e.dropId === undefined || e.dropId === dropId),
+                          (e) => e.batchId === batch.id && e.type === type && e.dropId === drop?.id,
                         );
                         return (
-                          <button key={type} disabled={recorded} onClick={() => selectPoint(type)}>
-                            <span>{recorded ? '✓' : String(i + 1).padStart(2, '0')}</span>
+                          <button
+                            key={type + (drop?.id ?? '')}
+                            disabled={recorded}
+                            onClick={() => {
+                              if (drop) setDropId(drop.id);
+                              selectPoint(type);
+                            }}
+                          >
+                            <span>
+                              {recorded
+                                ? '✓'
+                                : String(EVENT_TYPES.indexOf(type) + 1).padStart(2, '0')}
+                            </span>
                             {t.eventNames[type]}
+                            {drop && <small>{drop.recipientLabel}</small>}
                           </button>
                         );
                       })}

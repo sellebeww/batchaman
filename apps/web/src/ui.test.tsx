@@ -65,3 +65,33 @@ test('AC-08 onboarding requests persistent storage and shows daily backup remind
   await waitFor(() => expect(persist).toHaveBeenCalledOnce());
   expect(screen.getByText(t.backupReminder)).toBeTruthy();
 });
+test('AC-01 second destination also takes only choose-point and confirm taps', async () => {
+  vi.stubGlobal('scrollTo', vi.fn());
+  await setup({
+    id: 'k',
+    name: 'Dapur Sintetis',
+    code: 'SYN',
+    timezone: 'Asia/Jakarta',
+    thresholdProfileId: 'default',
+  });
+  await createBatch(
+    {
+      menuName: 'Menu Sintetis',
+      portions: 2,
+      foodProfile: 'COOKED_HOT',
+      drops: [
+        { recipientLabel: 'Tujuan A', portions: 1 },
+        { recipientLabel: 'Tujuan B', portions: 1 },
+      ],
+    },
+    new Date().toISOString(),
+  );
+  render(<App />);
+  fireEvent.click(await screen.findByText('Menu Sintetis'));
+  fireEvent.click(screen.getByRole('button', { name: /Tiba di tujuan.*Tujuan B/ }));
+  fireEvent.click(screen.getByRole('button', { name: t.confirm }));
+  await screen.findByText(t.success);
+  const v = project(await readState());
+  expect(v.events).toHaveLength(1);
+  expect(v.events[0]!.dropId).toBe(v.drops[1]!.id);
+});

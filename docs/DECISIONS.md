@@ -18,3 +18,4 @@
 - D016: Agregat UNKNOWN diprioritaskan di atas OK, tetapi tetap di bawah PERHATIAN/MELEWATI_BATAS. Tujuan yang belum dapat dihitung tidak boleh tampak telah terjawab oleh tujuan lain; kelengkapan tetap terpisah.
 - D017: CSV harian menyertakan metrik pada baris event agar skrip pilot cukup menerima dua berkas (ekspor aplikasi dan checklist kertas). Entri dibatalkan dikecualikan dari metrik, koreksi tetap dihitung, lag negatif tidak memperoleh kredit real-time; pembanding hilang dilaporkan eksplisit.
 - D018: Demo Pages memakai database terpisah dan label DEMO permanen. Seed sintetis tidak menggantikan data operasional dan tidak ada data dapur nyata di bundle/repo.
+- D019: Titik penerima ditampilkan langsung per tujuan pada layar catat; tidak memerlukan dropdown tujuan terpisah. Dengan begitu tujuan kedua dan seterusnya juga memenuhi dua ketukan (pilih titik+tujuan, konfirmasi). Tes komponen memeriksa ini secara eksplisit.

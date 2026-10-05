@@ -1,0 +1,33 @@
+{
+  "sourceRun": "https://github.com/sellebeww/batchaman/actions/runs/37279368837",
+  "testedCommit": "e7dc37d",
+  "lighthouseVersion": "13.5.0",
+  "fetchTime": "2026-10-05T07:45:27.110Z",
+  "formFactor": "mobile",
+  "scores": {
+    "performance": 92,
+    "accessibility": 100
+  },
+  "metrics": {
+    "first-contentful-paint": {
+      "value": 1953.9929,
+      "unit": "millisecond"
+    },
+    "largest-contentful-paint": {
+      "value": 2075.9929,
+      "unit": "millisecond"
+    },
+    "total-blocking-time": {
+      "value": 262,
+      "unit": "millisecond"
+    },
+    "cumulative-layout-shift": {
+      "value": 0,
+      "unit": "unitless"
+    },
+    "speed-index": {
+      "value": 1953.9929,
+      "unit": "millisecond"
+    }
+  }
+}
