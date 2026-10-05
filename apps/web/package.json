@@ -14,7 +14,8 @@
     "react-dom": "^19.2.0",
     "dexie": "^4.2.0",
     "qrcode": "^1.5.4",
-    "@zxing/browser": "^0.1.5"
+    "@zxing/browser": "^0.1.5",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "tailwindcss": "^4.1.14",

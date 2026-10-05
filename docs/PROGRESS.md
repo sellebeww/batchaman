@@ -29,3 +29,10 @@ Tidak ada klaim tes, cakupan, deployment atau skor performa sebelum pengukuran.
 - Enam skenario menjadi fixture: normal, terlambat, suhu kosong, entri belakangan, jam bergeser, multi-tujuan.
 - 73 tes total lulus; lint/typecheck/build lulus.
 - Berikutnya: Fase 4 aplikasi web; persistensi dasar dibangun bersama alur agar input tidak sekadar tersimpan di memori.
+
+## Fase 4 — selesai
+- Onboarding, batch multi-tujuan, catat dua ketukan, koreksi/urungkan, dasbor, insiden, CSV/cetak, QR A6/58mm, tentang dan tindak lanjut supervisor tersedia.
+- `pnpm check`: 87 tes lulus, lint/typecheck/build lulus; JS utama 145,43KB gzip.
+- Playwright: 4/4 lulus (alur multi-tujuan, double tap/undo, peringatan/visibility, jaringan keluar/axe/320px).
+- Axe tanpa pelanggaran serius/kritis pada detail, tentang, data, telusuri, dasbor. Overflow URL sumber di 320px ditemukan dan diperbaiki.
+- Berikutnya: Fase 5 precache PWA dan pembuktian alur offline/restore. Kamera fisik dan hasil printer tetap memerlukan uji perangkat.
