@@ -23,3 +23,9 @@ Tidak ada klaim tes, cakupan, deployment atau skor performa sebelum pengukuran.
 - Cakupan core: baris 100%, cabang 95,72%, fungsi 100%. AC-09 tamper/insert/reorder/head lulus.
 - Tiga zona, lintas tengah malam, tiap profil, duplikat, multi-tujuan, supersedes, titik hilang, suhu kosong dan jam mundur tercakup.
 - Berikutnya: simulator deterministik; validasi relasi koreksi/restore ditambahkan pada lapisan persistensi.
+
+## Fase 3 — selesai
+- Simulator berseed menghasilkan N hari × M batch, kode unik, seluruh data berlabel sintetis.
+- Enam skenario menjadi fixture: normal, terlambat, suhu kosong, entri belakangan, jam bergeser, multi-tujuan.
+- 73 tes total lulus; lint/typecheck/build lulus.
+- Berikutnya: Fase 4 aplikasi web; persistensi dasar dibangun bersama alur agar input tidak sekadar tersimpan di memori.

@@ -1,0 +1,6 @@
+import { expect,test } from 'vitest';
+import { calculate,verifyChain } from '@batchaman/core';
+import { simulate,SCENARIOS } from './index';
+test('seed deterministic N days x M batches with valid chain',()=>{const a=simulate({seed:42,days:3,batchesPerDay:6});expect(a).toEqual(simulate({seed:42,days:3,batchesPerDay:6}));expect(a.batches).toHaveLength(18);expect(new Set(a.batches.map(b=>b.shortCode)).size).toBe(18);expect(verifyChain(a.events)).toBe(true);expect(a).not.toEqual(simulate({seed:43,days:3,batchesPerDay:6}))});
+test.each(SCENARIOS)('synthetic fixture %s uses core',scenario=>{const a=simulate({scenario,batchesPerDay:1});const b=a.batches[0]!,d=a.drops[0]!;const result=calculate(a.events,b.id,d.id,b.foodProfile,b.threshold,'2026-10-06T00:00:00Z');expect(result.incomplete).toBe(false);if(scenario==='late-delivery')expect(result.timeStatus).toBe('MELEWATI_BATAS');if(scenario==='late-entry')expect(result.flags).toContain('DIISI_BELAKANGAN');if(scenario==='clock-shift')expect(result.flags).toContain('JAM_PERANGKAT_MENCURIGAKAN');if(scenario==='missing-temperature')expect(result.dangerMinutes).toBe(60);if(scenario==='multi-drop')expect(a.drops).toHaveLength(2)});
+test('invalid dimensions fail',()=>expect(()=>simulate({days:0})).toThrow());
