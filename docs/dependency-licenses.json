@@ -1,0 +1,197 @@
+[
+  {
+    "name": "@noble/hashes",
+    "versions": ["2.4.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "@zxing/browser",
+    "versions": ["0.1.5"],
+    "license": "MIT"
+  },
+  {
+    "name": "@zxing/library",
+    "versions": ["0.21.3"],
+    "license": "MIT"
+  },
+  {
+    "name": "@zxing/text-encoding",
+    "versions": ["0.9.0"],
+    "license": "(Unlicense OR Apache-2.0)"
+  },
+  {
+    "name": "ansi-regex",
+    "versions": ["5.0.1"],
+    "license": "MIT"
+  },
+  {
+    "name": "ansi-styles",
+    "versions": ["4.3.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "camelcase",
+    "versions": ["5.3.1"],
+    "license": "MIT"
+  },
+  {
+    "name": "cliui",
+    "versions": ["6.0.0"],
+    "license": "ISC"
+  },
+  {
+    "name": "color-convert",
+    "versions": ["2.0.1"],
+    "license": "MIT"
+  },
+  {
+    "name": "color-name",
+    "versions": ["1.1.4"],
+    "license": "MIT"
+  },
+  {
+    "name": "decamelize",
+    "versions": ["1.2.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "dexie",
+    "versions": ["4.4.6"],
+    "license": "Apache-2.0"
+  },
+  {
+    "name": "dijkstrajs",
+    "versions": ["1.0.3"],
+    "license": "MIT"
+  },
+  {
+    "name": "emoji-regex",
+    "versions": ["8.0.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "find-up",
+    "versions": ["4.1.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "get-caller-file",
+    "versions": ["2.0.5"],
+    "license": "ISC"
+  },
+  {
+    "name": "is-fullwidth-code-point",
+    "versions": ["3.0.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "locate-path",
+    "versions": ["5.0.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "p-limit",
+    "versions": ["2.3.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "p-locate",
+    "versions": ["4.1.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "p-try",
+    "versions": ["2.2.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "path-exists",
+    "versions": ["4.0.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "pngjs",
+    "versions": ["5.0.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "qrcode",
+    "versions": ["1.5.4"],
+    "license": "MIT"
+  },
+  {
+    "name": "react",
+    "versions": ["19.3.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "react-dom",
+    "versions": ["19.3.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "require-directory",
+    "versions": ["2.1.1"],
+    "license": "MIT"
+  },
+  {
+    "name": "require-main-filename",
+    "versions": ["2.0.0"],
+    "license": "ISC"
+  },
+  {
+    "name": "scheduler",
+    "versions": ["0.28.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "set-blocking",
+    "versions": ["2.0.0"],
+    "license": "ISC"
+  },
+  {
+    "name": "string-width",
+    "versions": ["4.2.3"],
+    "license": "MIT"
+  },
+  {
+    "name": "strip-ansi",
+    "versions": ["6.0.1"],
+    "license": "MIT"
+  },
+  {
+    "name": "ts-custom-error",
+    "versions": ["3.3.1"],
+    "license": "MIT"
+  },
+  {
+    "name": "which-module",
+    "versions": ["2.0.1"],
+    "license": "ISC"
+  },
+  {
+    "name": "wrap-ansi",
+    "versions": ["6.2.0"],
+    "license": "MIT"
+  },
+  {
+    "name": "y18n",
+    "versions": ["4.0.3"],
+    "license": "ISC"
+  },
+  {
+    "name": "yargs",
+    "versions": ["15.4.1"],
+    "license": "MIT"
+  },
+  {
+    "name": "yargs-parser",
+    "versions": ["18.1.3"],
+    "license": "ISC"
+  },
+  {
+    "name": "zod",
+    "versions": ["4.6.5"],
+    "license": "MIT"
+  }
+]

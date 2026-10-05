@@ -1,61 +1,1113 @@
-import { lazy,Suspense,useCallback,useEffect,useMemo,useRef,useState, type FormEvent,type ReactNode } from 'react';
-import { activeEvents,aggregate,calculate,EVENT_TYPES,FOOD_PROFILES,fromLocal,localDate,localTime,ROLES,thresholdSetSchema,ZONES,type Batch,type BatchEvent,type EventType,type Exposure,type FoodProfile,type Kitchen,type Role } from '@batchaman/core';
-import { append,backupJSON,createBatch,mutate,newState,project,readState,record,restoreBackup,revoke,setup,type State,type View } from './store';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
+import {
+  activeEvents,
+  aggregate,
+  calculate,
+  EVENT_TYPES,
+  FOOD_PROFILES,
+  fromLocal,
+  localDate,
+  localTime,
+  ROLES,
+  thresholdSetSchema,
+  ZONES,
+  type Batch,
+  type BatchEvent,
+  type EventType,
+  type Exposure,
+  type FoodProfile,
+  type Kitchen,
+  type Role,
+} from '@batchaman/core';
+import {
+  append,
+  backupJSON,
+  createBatch,
+  mutate,
+  newState,
+  project,
+  readState,
+  record,
+  restoreBackup,
+  revoke,
+  setup,
+  type State,
+  type View,
+} from './store';
 import { t } from './i18n/id';
-import { download,metricsCSV,reportCSV } from './reports';
-import { enableAudio,notifyWarning } from './alerts';
-const Scanner=lazy(()=>import('./Scanner'));
-type Screen='today'|'create'|'detail'|'confirm'|'trace'|'data'|'about'|'label';
-const emptyView=()=>project(newState());
-const nowISO=()=>new Date().toISOString();
-const dateTime=(utc:string,k:Kitchen)=>localDate(utc,k.timezone)+' '+localTime(utc,k.timezone);
-function Field({label,children}:{label:string;children:ReactNode}){return <label className="field"><span>{label}</span>{children}</label>}
-function Status({r}:{r:Exposure}){return <div className={'status '+r.timeStatus}><strong>{r.timeStatus==='MELEWATI_BATAS'?'! ':r.timeStatus==='PERHATIAN'?'△ ':'◷ '}{t.timeNames[r.timeStatus]}</strong><div>{r.incomplete?t.incomplete:t.complete} · {r.ongoing?t.ongoing:t.finished}</div>{r.remainingMinutes!==null&&<p>{t.remaining}: <b>{Math.floor(r.remainingMinutes)} {t.minutes}</b> · {t.exposure}: {Math.ceil(r.dangerMinutes!)} {t.minutes}</p>}{r.flags.length>0&&<ul>{r.flags.map(f=><li key={f}>{t.flagNames[f]}</li>)}</ul>}</div>}
-function KitchenForm({onSave}:{onSave:(k:Kitchen)=>Promise<void>}){return <form className="panel stack" onSubmit={e=>{e.preventDefault();const f=new FormData(e.currentTarget);void onSave({id:crypto.randomUUID(),name:String(f.get('name')),code:String(f.get('code')).toUpperCase(),timezone:String(f.get('zone')) as Kitchen['timezone'],thresholdProfileId:'placeholder-v1'})}}><h1>{t.welcome}</h1><p>{t.intro}</p><Field label={t.kitchenName}><input name="name" required maxLength={100}/></Field><Field label={t.kitchenCode}><input name="code" required pattern="[A-Za-z0-9]{2,12}" maxLength={12}/></Field><Field label={t.zone}><select name="zone">{ZONES.map((z,i)=><option key={z} value={z}>{['WIB','WITA','WIT'][i]}</option>)}</select></Field><p>{t.timezoneHint}</p><button className="primary">{t.start}</button></form>}
-function BatchForm({onSave}:{onSave:(input:Parameters<typeof createBatch>[0])=>Promise<void>}){
- const [dest,setDest]=useState([{recipientLabel:'',portions:100,routeLabel:'',vehicleLabel:''}]);const [busy,setBusy]=useState(false);const [error,setError]=useState('');
- const update=(i:number,key:string,value:string|number)=>setDest(d=>d.map((x,n)=>n===i?{...x,[key]:value}:x));
- const submit=async(e:FormEvent<HTMLFormElement>)=>{e.preventDefault();const f=new FormData(e.currentTarget),portions=Number(f.get('portions'));if(dest.reduce((s,d)=>s+d.portions,0)!==portions){setError(t.invalidPortions);return}setBusy(true);try{await onSave({menuName:String(f.get('menu')),portions,foodProfile:String(f.get('profile')) as FoodProfile,drops:dest})}finally{setBusy(false)}};
- return <form onSubmit={e=>void submit(e)} className="stack"><h1>{t.create}</h1><div className="panel stack"><Field label={t.menu}><input name="menu" required maxLength={120}/></Field><Field label={t.portions}><input name="portions" type="number" min={1} max={100000} defaultValue={100} required/></Field><Field label={t.profile}><select name="profile">{FOOD_PROFILES.map(p=><option key={p} value={p}>{t.foodNames[p]}</option>)}</select></Field></div><h2>{t.destinations}</h2>{dest.map((d,i)=><fieldset className="panel stack" key={i}><legend>{t.destinations} {i+1}</legend><Field label={t.recipient}><input required maxLength={120} value={d.recipientLabel} onChange={e=>update(i,'recipientLabel',e.target.value)}/></Field><Field label={t.portions}><input required type="number" min={1} max={100000} value={d.portions} onChange={e=>update(i,'portions',Number(e.target.value))}/></Field><Field label={t.route}><input value={d.routeLabel} maxLength={100} onChange={e=>update(i,'routeLabel',e.target.value)}/></Field><Field label={t.vehicle}><input value={d.vehicleLabel} maxLength={100} onChange={e=>update(i,'vehicleLabel',e.target.value)}/></Field>{dest.length>1&&<button type="button" onClick={()=>setDest(dest.filter((_,j)=>j!==i))}>{t.remove}</button>}</fieldset>)}<button type="button" onClick={()=>setDest([...dest,{recipientLabel:'',portions:100,routeLabel:'',vehicleLabel:''}])}>+ {t.addDrop}</button><p>{t.createHint}</p>{error&&<p role="alert">{error}</p>}<button className="primary" disabled={busy}>{t.create}</button></form>
+import { download, metricsCSV, reportCSV } from './reports';
+import { enableAudio, notifyWarning } from './alerts';
+const Scanner = lazy(() => import('./Scanner'));
+type Screen = 'today' | 'create' | 'detail' | 'confirm' | 'trace' | 'data' | 'about' | 'label';
+const emptyView = () => project(newState());
+const nowISO = () => new Date().toISOString();
+const dateTime = (utc: string, k: Kitchen) =>
+  localDate(utc, k.timezone) + ' ' + localTime(utc, k.timezone);
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      {children}
+    </label>
+  );
 }
-function QR({code}:{code:string}){const [url,setUrl]=useState('');useEffect(()=>{let active=true;void import('qrcode').then(q=>q.toDataURL(code,{width:240,margin:2,errorCorrectionLevel:'M'})).then(s=>{if(active)setUrl(s)});return()=>{active=false}},[code]);return url?<img className="qr" src={url} width={240} height={240} alt={`${t.label}: ${code}`}/>:<p>{t.loading}</p>}
-export default function App(){
- const [state,setState]=useState<State>(newState),[view,setView]=useState<View>(emptyView),[loading,setLoading]=useState(true),[screen,setScreen]=useState<Screen>('today'),[batchId,setBatchId]=useState(''),[dropId,setDropId]=useState(''),[point,setPoint]=useState<EventType>('COOK_DONE'),[correction,setCorrection]=useState<BatchEvent|null>(null),[now,setNow]=useState(nowISO),[error,setError]=useState(''),[message,setMessage]=useState(''),[online,setOnline]=useState(navigator.onLine),[date,setDate]=useState(''),[query,setQuery]=useState(''),[sound,setSound]=useState(false),[undo,setUndo]=useState<{id:string;deadline:number}|null>(null),[scan,setScan]=useState(false),[code,setCode]=useState(''),[labelSize,setLabelSize]=useState('a6'),[busy,setBusy]=useState(false),[persistMessage,setPersistMessage]=useState('');
- const entryStart=useRef(performance.now()),confirmLock=useRef(false),seenAlerts=useRef(new Set<string>());const heading=useRef<HTMLElement>(null);
- const apply=useCallback((s:State)=>{const v=project(s);setState(s);setView(v)},[]);
- const refresh=useCallback(async()=>{try{apply(await readState());setError('')}catch{setError(t.hashInvalid);setScreen('data')}finally{setLoading(false)}},[apply]);
- useEffect(()=>{void refresh();const timer=setInterval(()=>setNow(nowISO()),1000);const visible=()=>{setNow(nowISO());if(document.visibilityState==='visible')void refresh()};const connectivity=()=>setOnline(navigator.onLine);document.addEventListener('visibilitychange',visible);window.addEventListener('online',connectivity);window.addEventListener('offline',connectivity);return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',visible);window.removeEventListener('online',connectivity);window.removeEventListener('offline',connectivity)}},[refresh]);
- useEffect(()=>{heading.current?.focus();window.scrollTo(0,0)},[screen]);
- useEffect(()=>{if(undo&&performance.now()>undo.deadline)setUndo(null)},[now,undo]);
- const kitchen=view.kitchen,batch=view.batches.find(b=>b.id===batchId),batchDrops=view.drops.filter(d=>d.batchId===batchId);
- const results=useMemo(()=>new Map(view.drops.map(d=>{const b=view.batches.find(b=>b.id===d.batchId)!;return [d.id,calculate(view.events,b.id,d.id,b.foodProfile,b.threshold,now,view.revoked)]})),[view,now]);
- useEffect(()=>{for(const [id,r] of results){if(r.timeStatus==='PERHATIAN'||r.timeStatus==='MELEWATI_BATAS'){const key=id+r.timeStatus;if(!seenAlerts.current.has(key)){seenAlerts.current.add(key);notifyWarning(sound)}}}},[results,sound]);
- const warning=!kitchen||Object.values(view.thresholds).some(p=>p.status==='UNVERIFIED')||view.batches.some(b=>b.threshold.status==='UNVERIFIED');
- const go=(s:Screen)=>{setScreen(s);setError('');setMessage('');setScan(false)};
- const openBatch=(b:Batch)=>{setBatchId(b.id);setDropId(view.drops.find(d=>d.batchId===b.id)!.id);entryStart.current=performance.now();go('detail')};
- const openCode=useCallback((raw:string)=>{const b=view.batches.find(b=>b.shortCode.toUpperCase()===raw.trim().toUpperCase());setScan(false);if(b){setBatchId(b.id);setDropId(view.drops.find(d=>d.batchId===b.id)!.id);entryStart.current=performance.now();setScreen('detail');setError('')}else setError(t.notFound)},[view]);
- const run=async(action:()=>Promise<void>)=>{setError('');try{await action()}catch{setError(t.error)}};
- const selectPoint=(type:EventType,old:BatchEvent|null=null)=>{setPoint(type);setCorrection(old);setScreen('confirm');setError('');setMessage('');setUndo(null)};
- const currentEvents=activeEvents(view.events,view.revoked);
- const confirm=async(e:FormEvent<HTMLFormElement>)=>{e.preventDefault();if(confirmLock.current)return;confirmLock.current=true;setBusy(true);setError('');const form=new FormData(e.currentTarget);try{const temp=String(form.get('temperature')??'').trim(),note=String(form.get('note')??'');if(temp!==''&&(!Number.isFinite(Number(temp))||Number(temp)<-30||Number(temp)>120)){setError(t.invalidTemp);return}if(correction&&!note.trim()){setError(t.correctionReason);return}const timestamp=nowISO(),adjusted=String(form.get('occurred')??'');const result=await record({batchId,type:point,...(point==='ARRIVED'||point==='SERVE_START'?{dropId}:{}),role:String(form.get('role')||'COOK') as Role,occurredAt:adjusted?fromLocal(adjusted,kitchen!.timezone):timestamp,...(temp?{tempC:Number(temp)}:{}),...(note?{note}:{}),...(form.get('actor')?{actorTag:String(form.get('actor'))}:{}),...(correction?{supersedes:correction.id}:{})},timestamp,Math.max(0,performance.now()-entryStart.current));apply(result.state);setMessage(result.duplicate?t.duplicate:t.success);if(!result.duplicate&&!correction)setUndo({id:result.eventId,deadline:performance.now()+10000});navigator.vibrate?.(60);setScreen('detail');setNow(timestamp);entryStart.current=performance.now()}catch{setError(t.error)}finally{setBusy(false);confirmLock.current=false}};
- const selectedDate=date||(kitchen?localDate(now,kitchen.timezone):'');
- const filtered=view.batches.filter(b=>(screen==='trace'?(!date||localDate(b.createdAt,kitchen!.timezone)===date):localDate(b.createdAt,kitchen!.timezone)===selectedDate)&&(!query||[b.shortCode,b.menuName,...view.drops.filter(d=>d.batchId===b.id).map(d=>d.recipientLabel)].some(s=>s.toLowerCase().includes(query.toLowerCase()))));
- const exportBatches=(batches:Batch[])=>download('batchaman-ringkasan.csv',reportCSV(view,batches,now),'text/csv;charset=utf-8');
- const persist=async()=>{try{const granted=await navigator.storage?.persist?.();setPersistMessage(granted?t.persistYes:t.persistNo)}catch{setPersistMessage(t.persistNo)}};
- const doBackup=async()=>{download('batchaman-cadangan.json',backupJSON(state,t.warning,t.privacy),'application/json');const s=await mutate(s=>({...s,lastBackup:nowISO()}));apply(s)};
- const synthetic=async()=>run(async()=>{const {simulate}=await import('@batchaman/sim');const data=simulate({start:localDate(now,'Asia/Jakarta')});let s=append(newState(),{kind:'KITCHEN',kitchen:data.kitchen});for(const b of data.batches)s=append(s,{kind:'BATCH',batch:b,drops:data.drops.filter(d=>d.batchId===b.id)});for(const event of data.events)s=append(s,{kind:'EVENT',event,metric:{eventId:event.id,batchId:event.batchId,durationMs:5000,lagMinutes:(Date.parse(event.recordedAt)-Date.parse(event.occurredAt))/60000,recordedAt:event.recordedAt}});await mutate((old)=>{if(old.entries.length)throw new Error('not empty');return s});apply(s);setScreen('today')});
- if(loading)return <main><p>{t.loading}</p></main>;
- return <><header className="topbar"><div className="brand"><span className="brandmark" aria-hidden="true">B</span><div><b>{t.app}</b><small>{kitchen?.name??t.tagline}</small></div></div><span className="connection">● {online?t.online:t.offline}</span></header><div className="shell"><aside className="sidebar no-print"><p className="eyebrow">{t.tagline}</p><nav aria-label={t.app}>{(['today','create','trace','data','about'] as const).map((s,i)=><button key={s} aria-current={screen===s?'page':undefined} onClick={()=>{if(s==='today'){setDate('');setQuery('')}go(s)}} disabled={!kitchen&&(s==='create'||s==='trace')}><span aria-hidden="true">{['◷','＋','⌕','▣','ⓘ'][i]}</span>{t[s]}</button>)}</nav><p className="sidebar-note">{t.privacy}</p></aside><main ref={heading} tabIndex={-1} className="content">
- {warning&&<aside className="warning" role="note"><b aria-hidden="true">!</b><span>{t.warning}</span></aside>}{kitchen?.code==='DEMO'&&<p className="demo">{t.demo}</p>}
- {error&&<div className="error no-print" role="alert">{error}</div>}{message&&<div className="success no-print" role="status"><strong>{message}</strong>{undo&&<><p>{t.undoHint}</p><button onClick={()=>{if(performance.now()>undo.deadline){setError(t.undoExpired);return}void run(async()=>{apply(await revoke(undo.id,nowISO()));setUndo(null);setMessage(t.undone)})}}>{t.undo}</button></>}</div>}
- {kitchen&&(!state.lastBackup||localDate(state.lastBackup,kitchen.timezone)!==localDate(now,kitchen.timezone))&&screen!=='label'&&<div className="backup-reminder no-print"><span>{t.backupReminder}</span><button onClick={()=>void run(doBackup)}>{t.backup}</button></div>}
- {!kitchen&&screen!=='about'&&screen!=='data'?<><KitchenForm onSave={async k=>run(async()=>{apply(await setup(k));void persist()})}/><p>{t.fresh}</p><button onClick={()=>void synthetic()}>{t.demoAction}</button><button onClick={()=>go('data')}>{t.restore}</button></>:<>
- {(screen==='today'||screen==='trace')&&<><div className="page-heading"><div><p className="eyebrow">{kitchen?.code}</p><h1>{screen==='today'?t.today:t.summary}</h1></div>{screen==='today'&&<button className="primary" onClick={()=>go('create')}>+ {t.create}</button>}</div><div className="panel filters"><Field label={t.date}><input type="date" value={screen==='today'?selectedDate:date} onChange={e=>setDate(e.target.value)}/></Field>{screen==='trace'&&<><button onClick={()=>setDate('')}>{t.clearDate}</button><Field label={t.search}><input value={query} onChange={e=>setQuery(e.target.value)}/></Field></>}<button onClick={()=>exportBatches(filtered)}>{screen==='today'?t.exportDaily:t.exportCsv}</button></div><div className="batch-grid">{filtered.length?filtered.map(b=>{const ds=view.drops.filter(d=>d.batchId===b.id),status=aggregate(ds.map(d=>results.get(d.id)!));return <article className="batch-card" key={b.id}><div className="card-top"><span className="code">{b.shortCode}</span><span>{b.portions} {t.unitsPortions}</span></div><h2><button className="text-button" onClick={()=>openBatch(b)}>{b.menuName}</button></h2><p>{ds.map(d=>d.recipientLabel).join(' · ')}</p><p className={'status-line '+status.timeStatus}>{t.timeNames[status.timeStatus]}</p><p>{status.incomplete?t.incomplete:t.complete}</p><button className="primary" onClick={()=>openBatch(b)}>{t.record} →</button></article>}):<div className="panel"><h2>{t.empty}</h2><p>{t.emptyHint}</p></div>}</div><section className="panel no-print"><h2>{t.scan}</h2><form className="row" onSubmit={e=>{e.preventDefault();openCode(code)}}><Field label={t.manual}><input value={code} onChange={e=>setCode(e.target.value)}/></Field><button>{t.openCode}</button></form><button onClick={()=>setScan(true)}>{t.scan}</button>{scan&&<Suspense fallback={<p>{t.loading}</p>}><Scanner onCode={openCode} onClose={()=>setScan(false)}/></Suspense>}</section></>}
- {screen==='create'&&<BatchForm onSave={async input=>run(async()=>{const r=await createBatch(input,nowISO());apply(r.state);setBatchId(r.batchId);setDropId(project(r.state).drops.find(d=>d.batchId===r.batchId)!.id);entryStart.current=performance.now();setScreen('detail');setMessage(t.batchCreated)})}/>}
- {screen==='detail'&&batch&&<><div className="page-heading"><div><p className="code">{batch.shortCode}</p><h1>{batch.menuName}</h1><p>{batch.portions} {t.unitsPortions} · {t.foodNames[batch.foodProfile]}</p></div><button className="no-print" onClick={()=>go('today')}>{t.back}</button></div><section className="panel no-print"><h2>{t.choosePoint}</h2>{batchDrops.length>1&&<Field label={t.chooseDrop}><select value={dropId} onChange={e=>setDropId(e.target.value)}>{batchDrops.map(d=><option key={d.id} value={d.id}>{d.recipientLabel}</option>)}</select></Field>}<div className="point-grid">{EVENT_TYPES.map((type,i)=>{const recorded=currentEvents.some(e=>e.batchId===batch.id&&e.type===type&&(e.dropId===undefined||e.dropId===dropId));return <button key={type} disabled={recorded} onClick={()=>selectPoint(type)}><span>{recorded?'✓':String(i+1).padStart(2,'0')}</span>{t.eventNames[type]}</button>})}</div></section><h2>{t.allDrops}</h2>{batchDrops.map(d=><section className="panel" key={d.id}><h3>{d.recipientLabel}</h3><p>{d.portions} {t.unitsPortions} {d.routeLabel&&' · '+d.routeLabel} {d.vehicleLabel&&' · '+d.vehicleLabel}</p><Status r={results.get(d.id)!}/></section>)}<div className="row no-print"><button onClick={()=>exportBatches([batch])}>{t.exportCsv}</button><button onClick={()=>window.print()}>{t.print}</button><button onClick={()=>go('label')}>{t.label}</button></div><section className="panel"><h2>{t.timeline}</h2>{!view.events.some(e=>e.batchId===batchId)&&<p>{t.noEvents}</p>}<ol className="timeline">{view.events.filter(e=>e.batchId===batchId).map(e=>{const active=currentEvents.some(x=>x.id===e.id);return <li key={e.id}><div className="timeline-title"><strong>{t.eventNames[e.type]}</strong><time>{dateTime(e.occurredAt,kitchen!)}</time></div>{e.dropId&&<p>{view.drops.find(d=>d.id===e.dropId)?.recipientLabel}</p>}<p>{t.roleNames[e.role]}{e.actorTag&&' · '+e.actorTag} · {e.tempC===undefined?t.tempHint:`${e.tempC} °C`}</p><p>{t.recorded}: {dateTime(e.recordedAt,kitchen!)}</p>{e.note&&<p>{e.note}</p>}{!active?<p>{view.revoked.includes(e.id)?t.revoked:t.superseded}</p>:<button className="no-print" onClick={()=>{setDropId(e.dropId??batchDrops[0]!.id);entryStart.current=performance.now();selectPoint(e.type,e)}}>{t.correction}</button>}</li>})}</ol></section><section className="panel"><h2>{t.thresholdStatus}: {batch.threshold.status}</h2><p>{t.source}: {batch.threshold.source}</p>{batch.threshold.verifiedBy&&<p>{t.verifiedBy}: {batch.threshold.verifiedBy} · {batch.threshold.verifiedAt}</p>}<p>{t.privacy}</p></section><section className="panel"><h2>{t.resolve}</h2><p>{t.resolveHint}</p>{view.resolutions.filter(r=>r.batchId===batchId).map((r,i)=><p key={i}>{dateTime(r.at,kitchen!)} · {r.note}</p>)}<form className="stack no-print" onSubmit={e=>{e.preventDefault();const note=String(new FormData(e.currentTarget).get('resolution'));void run(async()=>{apply(await mutate(s=>append(s,{kind:'RESOLVE',batchId,note,at:nowISO()})));setMessage(t.resolved)})}}><Field label={t.resolution}><textarea name="resolution" required maxLength={1000}/></Field><button>{t.save}</button></form></section></>}
- {screen==='confirm'&&batch&&<form className="panel stack confirmation" onSubmit={e=>void confirm(e)}><p className="code">{batch.shortCode} · {batch.menuName}</p><h1>{correction?t.correcting:t.eventNames[point]}</h1><h2>{t.eventNames[point]}</h2>{(point==='ARRIVED'||point==='SERVE_START')&&<p>{batchDrops.find(d=>d.id===dropId)?.recipientLabel}</p>}<p className="auto-time">{t.automatic}<br/><strong>{localTime(now,kitchen!.timezone)}</strong></p><Field label={t.temperature}><input name="temperature" type="number" step="0.1" inputMode="decimal" defaultValue={correction?.tempC??''}/></Field><p>{t.tempHint}</p><details open={!!correction}><summary>{t.adjust}</summary><div className="stack"><Field label={t.occurred}><input name="occurred" type="datetime-local" defaultValue={correction?localDate(correction.occurredAt,kitchen!.timezone)+'T'+localTime(correction.occurredAt,kitchen!.timezone):''}/></Field><Field label={t.role}><select name="role" defaultValue={correction?.role??(point==='LOADED'?'DRIVER':point==='ARRIVED'||point==='SERVE_START'?'RECEIVER':point==='PACKED'?'PACKER':'COOK')}>{ROLES.map(r=><option key={r} value={r}>{t.roleNames[r]}</option>)}</select></Field><Field label={t.actor}><input name="actor" maxLength={30}/></Field><Field label={t.note}><textarea name="note" maxLength={1000}/></Field></div></details><button className="primary big" disabled={busy}>{t.confirm}</button><button type="button" onClick={()=>go('detail')}>{t.cancel}</button></form>}
- {screen==='label'&&batch&&<section className={'panel label-print '+labelSize}><div className="no-print"><h1>{t.label}</h1><Field label={t.labelSize}><select value={labelSize} onChange={e=>setLabelSize(e.target.value)}><option value="a6">{t.a6}</option><option value="strip">{t.strip}</option></select></Field><p>{t.printHint}</p></div><div className="label-body"><strong>{t.app}</strong><h2>{batch.shortCode}</h2><QR code={batch.shortCode}/><h3>{batch.menuName}</h3><p>{batch.portions} {t.unitsPortions}</p><p>{dateTime(batch.createdAt,kitchen!)}</p><p>{t.warning}</p><p>{t.privacy}</p></div><div className="row no-print"><button onClick={()=>window.print()}>{t.print}</button><button onClick={()=>go('detail')}>{t.back}</button></div></section>}
- {screen==='data'&&<><h1>{t.data}</h1><section className="panel stack"><p>{t.privacy}</p><p>{t.storageHint}</p><button onClick={()=>void persist()}>{t.persist}</button>{persistMessage&&<p role="status">{persistMessage}</p>}<button onClick={()=>void run(doBackup)}>{t.backup}</button><Field label={t.restore}><input type="file" accept=".json,application/json" onChange={e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;if(!window.confirm(t.restoreConfirm))return;void (async()=>{try{if(file.size>50_000_000)throw new Error('size');apply(await restoreBackup(await file.text()));setError('');setMessage(t.restored)}catch{setError(t.invalidFile)}})()}}/></Field><button onClick={()=>void run(async()=>{apply(await readState());setMessage(t.hashValid)})}>{t.verify}</button><p>{t.localMetrics}</p><button onClick={()=>download('batchaman-metrik.csv',metricsCSV(view),'text/csv;charset=utf-8')}>{t.exportMetrics}</button></section><section className="panel stack"><h2>{t.thresholdStatus}</h2><p>{t.thresholdHint}</p><Field label={t.importThreshold}><input type="file" accept=".json,application/json" onChange={e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;void run(async()=>{if(file.size>100000)throw new Error('size');const thresholds=thresholdSetSchema.parse(JSON.parse(await file.text()));apply(await mutate(s=>append(s,{kind:'THRESHOLDS',thresholds})));setMessage(t.thresholdImported)})}}/></Field><Field label={t.sound}><button aria-pressed={sound} onClick={()=>{enableAudio();setSound(!sound)}}>{sound?t.soundOn:t.soundOff}</button></Field><p>{t.alarmHint}</p></section>{kitchen&&<section className="panel"><h2>{t.settings}</h2><p>{kitchen.name} · {kitchen.code} · {kitchen.timezone}</p></section>}</>}
- {screen==='about'&&<section className="panel"><h1>{t.about}</h1><ul className="about-list">{t.aboutItems.map(item=><li key={item}>{item}</li>)}</ul><p>{t.storageHint}</p><p>{t.alarmHint}</p><p>{t.privacy}</p></section>}
- </>}<footer>{t.footer}</footer></main></div></>
+function Status({ r }: { r: Exposure }) {
+  return (
+    <div className={'status ' + r.timeStatus}>
+      <strong>
+        {r.timeStatus === 'MELEWATI_BATAS' ? '! ' : r.timeStatus === 'PERHATIAN' ? '△ ' : '◷ '}
+        {t.timeNames[r.timeStatus]}
+      </strong>
+      <div>
+        {r.incomplete ? t.incomplete : t.complete} · {r.ongoing ? t.ongoing : t.finished}
+      </div>
+      {r.remainingMinutes !== null && (
+        <p>
+          {t.remaining}:{' '}
+          <b>
+            {Math.floor(r.remainingMinutes)} {t.minutes}
+          </b>{' '}
+          · {t.exposure}: {Math.ceil(r.dangerMinutes!)} {t.minutes}
+        </p>
+      )}
+      {r.flags.length > 0 && (
+        <ul>
+          {r.flags.map((f) => (
+            <li key={f}>{t.flagNames[f]}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+function KitchenForm({ onSave }: { onSave: (k: Kitchen) => Promise<void> }) {
+  return (
+    <form
+      className="panel stack"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const f = new FormData(e.currentTarget);
+        void onSave({
+          id: crypto.randomUUID(),
+          name: String(f.get('name')),
+          code: String(f.get('code')).toUpperCase(),
+          timezone: String(f.get('zone')) as Kitchen['timezone'],
+          thresholdProfileId: 'placeholder-v1',
+        });
+      }}
+    >
+      <h1>{t.welcome}</h1>
+      <p>{t.intro}</p>
+      <Field label={t.kitchenName}>
+        <input name="name" required maxLength={100} />
+      </Field>
+      <Field label={t.kitchenCode}>
+        <input name="code" required pattern="[A-Za-z0-9]{2,12}" maxLength={12} />
+      </Field>
+      <Field label={t.zone}>
+        <select name="zone">
+          {ZONES.map((z, i) => (
+            <option key={z} value={z}>
+              {['WIB', 'WITA', 'WIT'][i]}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <p>{t.timezoneHint}</p>
+      <button className="primary">{t.start}</button>
+    </form>
+  );
+}
+function BatchForm({
+  onSave,
+}: {
+  onSave: (input: Parameters<typeof createBatch>[0]) => Promise<void>;
+}) {
+  const [dest, setDest] = useState([
+    { recipientLabel: '', portions: 100, routeLabel: '', vehicleLabel: '' },
+  ]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const update = (i: number, key: string, value: string | number) =>
+    setDest((d) => d.map((x, n) => (n === i ? { ...x, [key]: value } : x)));
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget),
+      portions = Number(f.get('portions'));
+    if (dest.reduce((s, d) => s + d.portions, 0) !== portions) {
+      setError(t.invalidPortions);
+      return;
+    }
+    setBusy(true);
+    try {
+      await onSave({
+        menuName: String(f.get('menu')),
+        portions,
+        foodProfile: String(f.get('profile')) as FoodProfile,
+        drops: dest,
+      });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <form onSubmit={(e) => void submit(e)} className="stack">
+      <h1>{t.create}</h1>
+      <div className="panel stack">
+        <Field label={t.menu}>
+          <input name="menu" required maxLength={120} />
+        </Field>
+        <Field label={t.portions}>
+          <input name="portions" type="number" min={1} max={100000} defaultValue={100} required />
+        </Field>
+        <Field label={t.profile}>
+          <select name="profile">
+            {FOOD_PROFILES.map((p) => (
+              <option key={p} value={p}>
+                {t.foodNames[p]}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+      <h2>{t.destinations}</h2>
+      {dest.map((d, i) => (
+        <fieldset className="panel stack" key={i}>
+          <legend>
+            {t.destinations} {i + 1}
+          </legend>
+          <Field label={t.recipient}>
+            <input
+              required
+              maxLength={120}
+              value={d.recipientLabel}
+              onChange={(e) => update(i, 'recipientLabel', e.target.value)}
+            />
+          </Field>
+          <Field label={t.portions}>
+            <input
+              required
+              type="number"
+              min={1}
+              max={100000}
+              value={d.portions}
+              onChange={(e) => update(i, 'portions', Number(e.target.value))}
+            />
+          </Field>
+          <Field label={t.route}>
+            <input
+              value={d.routeLabel}
+              maxLength={100}
+              onChange={(e) => update(i, 'routeLabel', e.target.value)}
+            />
+          </Field>
+          <Field label={t.vehicle}>
+            <input
+              value={d.vehicleLabel}
+              maxLength={100}
+              onChange={(e) => update(i, 'vehicleLabel', e.target.value)}
+            />
+          </Field>
+          {dest.length > 1 && (
+            <button type="button" onClick={() => setDest(dest.filter((_, j) => j !== i))}>
+              {t.remove}
+            </button>
+          )}
+        </fieldset>
+      ))}
+      <button
+        type="button"
+        onClick={() =>
+          setDest([
+            ...dest,
+            { recipientLabel: '', portions: 100, routeLabel: '', vehicleLabel: '' },
+          ])
+        }
+      >
+        + {t.addDrop}
+      </button>
+      <p>{t.createHint}</p>
+      {error && <p role="alert">{error}</p>}
+      <button className="primary" disabled={busy}>
+        {t.create}
+      </button>
+    </form>
+  );
+}
+function QR({ code }: { code: string }) {
+  const [url, setUrl] = useState('');
+  useEffect(() => {
+    let active = true;
+    void import('qrcode')
+      .then((q) => q.toDataURL(code, { width: 240, margin: 2, errorCorrectionLevel: 'M' }))
+      .then((s) => {
+        if (active) setUrl(s);
+      });
+    return () => {
+      active = false;
+    };
+  }, [code]);
+  return url ? (
+    <img className="qr" src={url} width={240} height={240} alt={`${t.label}: ${code}`} />
+  ) : (
+    <p>{t.loading}</p>
+  );
+}
+export default function App() {
+  const [state, setState] = useState<State>(newState),
+    [view, setView] = useState<View>(emptyView),
+    [loading, setLoading] = useState(true),
+    [screen, setScreen] = useState<Screen>('today'),
+    [batchId, setBatchId] = useState(''),
+    [dropId, setDropId] = useState(''),
+    [point, setPoint] = useState<EventType>('COOK_DONE'),
+    [correction, setCorrection] = useState<BatchEvent | null>(null),
+    [now, setNow] = useState(nowISO),
+    [error, setError] = useState(''),
+    [message, setMessage] = useState(''),
+    [online, setOnline] = useState(navigator.onLine),
+    [date, setDate] = useState(''),
+    [query, setQuery] = useState(''),
+    [sound, setSound] = useState(false),
+    [undo, setUndo] = useState<{ id: string; deadline: number } | null>(null),
+    [scan, setScan] = useState(false),
+    [code, setCode] = useState(''),
+    [labelSize, setLabelSize] = useState('a6'),
+    [busy, setBusy] = useState(false),
+    [persistMessage, setPersistMessage] = useState('');
+  const entryStart = useRef(performance.now()),
+    confirmLock = useRef(false),
+    seenAlerts = useRef(new Set<string>());
+  const heading = useRef<HTMLElement>(null);
+  const apply = useCallback((s: State) => {
+    const v = project(s);
+    setState(s);
+    setView(v);
+  }, []);
+  const refresh = useCallback(async () => {
+    try {
+      apply(await readState());
+      setError('');
+    } catch {
+      setError(t.hashInvalid);
+      setScreen('data');
+    } finally {
+      setLoading(false);
+    }
+  }, [apply]);
+  useEffect(() => {
+    void refresh();
+    const timer = setInterval(() => setNow(nowISO()), 1000);
+    const visible = () => {
+      setNow(nowISO());
+      if (document.visibilityState === 'visible') void refresh();
+    };
+    const connectivity = () => setOnline(navigator.onLine);
+    document.addEventListener('visibilitychange', visible);
+    window.addEventListener('online', connectivity);
+    window.addEventListener('offline', connectivity);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', visible);
+      window.removeEventListener('online', connectivity);
+      window.removeEventListener('offline', connectivity);
+    };
+  }, [refresh]);
+  useEffect(() => {
+    heading.current?.focus();
+    window.scrollTo(0, 0);
+  }, [screen]);
+  useEffect(() => {
+    if (undo && performance.now() > undo.deadline) setUndo(null);
+  }, [now, undo]);
+  const kitchen = view.kitchen,
+    batch = view.batches.find((b) => b.id === batchId),
+    batchDrops = view.drops.filter((d) => d.batchId === batchId);
+  const results = useMemo(
+    () =>
+      new Map(
+        view.drops.map((d) => {
+          const b = view.batches.find((b) => b.id === d.batchId)!;
+          return [
+            d.id,
+            calculate(view.events, b.id, d.id, b.foodProfile, b.threshold, now, view.revoked),
+          ];
+        }),
+      ),
+    [view, now],
+  );
+  useEffect(() => {
+    for (const [id, r] of results) {
+      if (r.timeStatus === 'PERHATIAN' || r.timeStatus === 'MELEWATI_BATAS') {
+        const key = id + r.timeStatus;
+        if (!seenAlerts.current.has(key)) {
+          seenAlerts.current.add(key);
+          notifyWarning(sound);
+        }
+      }
+    }
+  }, [results, sound]);
+  const warning =
+    !kitchen ||
+    Object.values(view.thresholds).some((p) => p.status === 'UNVERIFIED') ||
+    view.batches.some((b) => b.threshold.status === 'UNVERIFIED');
+  const go = (s: Screen) => {
+    setScreen(s);
+    setError('');
+    setMessage('');
+    setScan(false);
+  };
+  const openBatch = (b: Batch) => {
+    setBatchId(b.id);
+    setDropId(view.drops.find((d) => d.batchId === b.id)!.id);
+    entryStart.current = performance.now();
+    go('detail');
+  };
+  const openCode = useCallback(
+    (raw: string) => {
+      const b = view.batches.find((b) => b.shortCode.toUpperCase() === raw.trim().toUpperCase());
+      setScan(false);
+      if (b) {
+        setBatchId(b.id);
+        setDropId(view.drops.find((d) => d.batchId === b.id)!.id);
+        entryStart.current = performance.now();
+        setScreen('detail');
+        setError('');
+      } else setError(t.notFound);
+    },
+    [view],
+  );
+  const run = async (action: () => Promise<void>) => {
+    setError('');
+    try {
+      await action();
+    } catch {
+      setError(t.error);
+    }
+  };
+  const selectPoint = (type: EventType, old: BatchEvent | null = null) => {
+    setPoint(type);
+    setCorrection(old);
+    setScreen('confirm');
+    setError('');
+    setMessage('');
+    setUndo(null);
+  };
+  const currentEvents = activeEvents(view.events, view.revoked);
+  const confirm = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (confirmLock.current) return;
+    confirmLock.current = true;
+    setBusy(true);
+    setError('');
+    const form = new FormData(e.currentTarget);
+    try {
+      const temp = String(form.get('temperature') ?? '').trim(),
+        note = String(form.get('note') ?? '');
+      if (
+        temp !== '' &&
+        (!Number.isFinite(Number(temp)) || Number(temp) < -30 || Number(temp) > 120)
+      ) {
+        setError(t.invalidTemp);
+        return;
+      }
+      if (correction && !note.trim()) {
+        setError(t.correctionReason);
+        return;
+      }
+      const timestamp = nowISO(),
+        adjusted = String(form.get('occurred') ?? '');
+      const result = await record(
+        {
+          batchId,
+          type: point,
+          ...(point === 'ARRIVED' || point === 'SERVE_START' ? { dropId } : {}),
+          role: String(form.get('role') || 'COOK') as Role,
+          occurredAt: adjusted ? fromLocal(adjusted, kitchen!.timezone) : timestamp,
+          ...(temp ? { tempC: Number(temp) } : {}),
+          ...(note ? { note } : {}),
+          ...(form.get('actor') ? { actorTag: String(form.get('actor')) } : {}),
+          ...(correction ? { supersedes: correction.id } : {}),
+        },
+        timestamp,
+        Math.max(0, performance.now() - entryStart.current),
+      );
+      apply(result.state);
+      setMessage(result.duplicate ? t.duplicate : t.success);
+      if (!result.duplicate && !correction)
+        setUndo({ id: result.eventId, deadline: performance.now() + 10000 });
+      navigator.vibrate?.(60);
+      setScreen('detail');
+      setNow(timestamp);
+      entryStart.current = performance.now();
+    } catch {
+      setError(t.error);
+    } finally {
+      setBusy(false);
+      confirmLock.current = false;
+    }
+  };
+  const selectedDate = date || (kitchen ? localDate(now, kitchen.timezone) : '');
+  const filtered = view.batches.filter(
+    (b) =>
+      (screen === 'trace'
+        ? !date || localDate(b.createdAt, kitchen!.timezone) === date
+        : localDate(b.createdAt, kitchen!.timezone) === selectedDate) &&
+      (!query ||
+        [
+          b.shortCode,
+          b.menuName,
+          ...view.drops.filter((d) => d.batchId === b.id).map((d) => d.recipientLabel),
+        ].some((s) => s.toLowerCase().includes(query.toLowerCase()))),
+  );
+  const exportBatches = (batches: Batch[]) =>
+    download('batchaman-ringkasan.csv', reportCSV(view, batches, now), 'text/csv;charset=utf-8');
+  const persist = async () => {
+    try {
+      const granted = await navigator.storage?.persist?.();
+      setPersistMessage(granted ? t.persistYes : t.persistNo);
+    } catch {
+      setPersistMessage(t.persistNo);
+    }
+  };
+  const doBackup = async () => {
+    download(
+      'batchaman-cadangan.json',
+      backupJSON(state, t.warning, t.privacy),
+      'application/json',
+    );
+    const s = await mutate((s) => ({ ...s, lastBackup: nowISO() }));
+    apply(s);
+  };
+  const synthetic = async () =>
+    run(async () => {
+      const { simulate } = await import('@batchaman/sim');
+      const data = simulate({ start: localDate(now, 'Asia/Jakarta') });
+      let s = append(newState(), { kind: 'KITCHEN', kitchen: data.kitchen });
+      for (const b of data.batches)
+        s = append(s, {
+          kind: 'BATCH',
+          batch: b,
+          drops: data.drops.filter((d) => d.batchId === b.id),
+        });
+      for (const event of data.events)
+        s = append(s, {
+          kind: 'EVENT',
+          event,
+          metric: {
+            eventId: event.id,
+            batchId: event.batchId,
+            durationMs: 5000,
+            lagMinutes: (Date.parse(event.recordedAt) - Date.parse(event.occurredAt)) / 60000,
+            recordedAt: event.recordedAt,
+          },
+        });
+      await mutate((old) => {
+        if (old.entries.length) throw new Error('not empty');
+        return s;
+      });
+      apply(s);
+      setScreen('today');
+    });
+  if (loading)
+    return (
+      <main>
+        <p>{t.loading}</p>
+      </main>
+    );
+  return (
+    <>
+      <header className="topbar">
+        <div className="brand">
+          <span className="brandmark" aria-hidden="true">
+            B
+          </span>
+          <div>
+            <b>{t.app}</b>
+            <small>{kitchen?.name ?? t.tagline}</small>
+          </div>
+        </div>
+        <span className="connection">● {online ? t.online : t.offline}</span>
+      </header>
+      <div className="shell">
+        <aside className="sidebar no-print">
+          <p className="eyebrow">{t.tagline}</p>
+          <nav aria-label={t.app}>
+            {(['today', 'create', 'trace', 'data', 'about'] as const).map((s, i) => (
+              <button
+                key={s}
+                aria-current={screen === s ? 'page' : undefined}
+                onClick={() => {
+                  if (s === 'today') {
+                    setDate('');
+                    setQuery('');
+                  }
+                  go(s);
+                }}
+                disabled={!kitchen && (s === 'create' || s === 'trace')}
+              >
+                <span aria-hidden="true">{['◷', '＋', '⌕', '▣', 'ⓘ'][i]}</span>
+                {t[s]}
+              </button>
+            ))}
+          </nav>
+          <p className="sidebar-note">{t.privacy}</p>
+        </aside>
+        <main ref={heading} tabIndex={-1} className="content">
+          {warning && (
+            <aside className="warning" role="note">
+              <b aria-hidden="true">!</b>
+              <span>{t.warning}</span>
+            </aside>
+          )}
+          {kitchen?.code === 'DEMO' && <p className="demo">{t.demo}</p>}
+          {error && (
+            <div className="error no-print" role="alert">
+              {error}
+            </div>
+          )}
+          {message && (
+            <div className="success no-print" role="status">
+              <strong>{message}</strong>
+              {undo && (
+                <>
+                  <p>{t.undoHint}</p>
+                  <button
+                    onClick={() => {
+                      if (performance.now() > undo.deadline) {
+                        setError(t.undoExpired);
+                        return;
+                      }
+                      void run(async () => {
+                        apply(await revoke(undo.id, nowISO()));
+                        setUndo(null);
+                        setMessage(t.undone);
+                      });
+                    }}
+                  >
+                    {t.undo}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+          {kitchen &&
+            (!state.lastBackup ||
+              localDate(state.lastBackup, kitchen.timezone) !== localDate(now, kitchen.timezone)) &&
+            screen !== 'label' && (
+              <div className="backup-reminder no-print">
+                <span>{t.backupReminder}</span>
+                <button onClick={() => void run(doBackup)}>{t.backup}</button>
+              </div>
+            )}
+          {!kitchen && screen !== 'about' && screen !== 'data' ? (
+            <>
+              <KitchenForm
+                onSave={async (k) =>
+                  run(async () => {
+                    apply(await setup(k));
+                    void persist();
+                  })
+                }
+              />
+              <p>{t.fresh}</p>
+              <button onClick={() => void synthetic()}>{t.demoAction}</button>
+              <button onClick={() => go('data')}>{t.restore}</button>
+            </>
+          ) : (
+            <>
+              {(screen === 'today' || screen === 'trace') && (
+                <>
+                  <div className="page-heading">
+                    <div>
+                      <p className="eyebrow">{kitchen?.code}</p>
+                      <h1>{screen === 'today' ? t.today : t.summary}</h1>
+                    </div>
+                    {screen === 'today' && (
+                      <button className="primary" onClick={() => go('create')}>
+                        + {t.create}
+                      </button>
+                    )}
+                  </div>
+                  <div className="panel filters">
+                    <Field label={t.date}>
+                      <input
+                        type="date"
+                        value={screen === 'today' ? selectedDate : date}
+                        onChange={(e) => setDate(e.target.value)}
+                      />
+                    </Field>
+                    {screen === 'trace' && (
+                      <>
+                        <button onClick={() => setDate('')}>{t.clearDate}</button>
+                        <Field label={t.search}>
+                          <input value={query} onChange={(e) => setQuery(e.target.value)} />
+                        </Field>
+                      </>
+                    )}
+                    <button onClick={() => exportBatches(filtered)}>
+                      {screen === 'today' ? t.exportDaily : t.exportCsv}
+                    </button>
+                  </div>
+                  <div className="batch-grid">
+                    {filtered.length ? (
+                      filtered.map((b) => {
+                        const ds = view.drops.filter((d) => d.batchId === b.id),
+                          status = aggregate(ds.map((d) => results.get(d.id)!));
+                        return (
+                          <article className="batch-card" key={b.id}>
+                            <div className="card-top">
+                              <span className="code">{b.shortCode}</span>
+                              <span>
+                                {b.portions} {t.unitsPortions}
+                              </span>
+                            </div>
+                            <h2>
+                              <button className="text-button" onClick={() => openBatch(b)}>
+                                {b.menuName}
+                              </button>
+                            </h2>
+                            <p>{ds.map((d) => d.recipientLabel).join(' · ')}</p>
+                            <p className={'status-line ' + status.timeStatus}>
+                              {t.timeNames[status.timeStatus]}
+                            </p>
+                            <p>{status.incomplete ? t.incomplete : t.complete}</p>
+                            <button className="primary" onClick={() => openBatch(b)}>
+                              {t.record} →
+                            </button>
+                          </article>
+                        );
+                      })
+                    ) : (
+                      <div className="panel">
+                        <h2>{t.empty}</h2>
+                        <p>{t.emptyHint}</p>
+                      </div>
+                    )}
+                  </div>
+                  <section className="panel no-print">
+                    <h2>{t.scan}</h2>
+                    <form
+                      className="row"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        openCode(code);
+                      }}
+                    >
+                      <Field label={t.manual}>
+                        <input value={code} onChange={(e) => setCode(e.target.value)} />
+                      </Field>
+                      <button>{t.openCode}</button>
+                    </form>
+                    <button onClick={() => setScan(true)}>{t.scan}</button>
+                    {scan && (
+                      <Suspense fallback={<p>{t.loading}</p>}>
+                        <Scanner onCode={openCode} onClose={() => setScan(false)} />
+                      </Suspense>
+                    )}
+                  </section>
+                </>
+              )}
+              {screen === 'create' && (
+                <BatchForm
+                  onSave={async (input) =>
+                    run(async () => {
+                      const r = await createBatch(input, nowISO());
+                      apply(r.state);
+                      setBatchId(r.batchId);
+                      setDropId(project(r.state).drops.find((d) => d.batchId === r.batchId)!.id);
+                      entryStart.current = performance.now();
+                      setScreen('detail');
+                      setMessage(t.batchCreated);
+                    })
+                  }
+                />
+              )}
+              {screen === 'detail' && batch && (
+                <>
+                  <div className="page-heading">
+                    <div>
+                      <p className="code">{batch.shortCode}</p>
+                      <h1>{batch.menuName}</h1>
+                      <p>
+                        {batch.portions} {t.unitsPortions} · {t.foodNames[batch.foodProfile]}
+                      </p>
+                    </div>
+                    <button className="no-print" onClick={() => go('today')}>
+                      {t.back}
+                    </button>
+                  </div>
+                  <section className="panel no-print">
+                    <h2>{t.choosePoint}</h2>
+                    {batchDrops.length > 1 && (
+                      <Field label={t.chooseDrop}>
+                        <select value={dropId} onChange={(e) => setDropId(e.target.value)}>
+                          {batchDrops.map((d) => (
+                            <option key={d.id} value={d.id}>
+                              {d.recipientLabel}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                    )}
+                    <div className="point-grid">
+                      {EVENT_TYPES.map((type, i) => {
+                        const recorded = currentEvents.some(
+                          (e) =>
+                            e.batchId === batch.id &&
+                            e.type === type &&
+                            (e.dropId === undefined || e.dropId === dropId),
+                        );
+                        return (
+                          <button key={type} disabled={recorded} onClick={() => selectPoint(type)}>
+                            <span>{recorded ? '✓' : String(i + 1).padStart(2, '0')}</span>
+                            {t.eventNames[type]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+                  <h2>{t.allDrops}</h2>
+                  {batchDrops.map((d) => (
+                    <section className="panel" key={d.id}>
+                      <h3>{d.recipientLabel}</h3>
+                      <p>
+                        {d.portions} {t.unitsPortions} {d.routeLabel && ' · ' + d.routeLabel}{' '}
+                        {d.vehicleLabel && ' · ' + d.vehicleLabel}
+                      </p>
+                      <Status r={results.get(d.id)!} />
+                    </section>
+                  ))}
+                  <div className="row no-print">
+                    <button onClick={() => exportBatches([batch])}>{t.exportCsv}</button>
+                    <button onClick={() => window.print()}>{t.print}</button>
+                    <button onClick={() => go('label')}>{t.label}</button>
+                  </div>
+                  <section className="panel">
+                    <h2>{t.timeline}</h2>
+                    {!view.events.some((e) => e.batchId === batchId) && <p>{t.noEvents}</p>}
+                    <ol className="timeline">
+                      {view.events
+                        .filter((e) => e.batchId === batchId)
+                        .map((e) => {
+                          const active = currentEvents.some((x) => x.id === e.id);
+                          return (
+                            <li key={e.id}>
+                              <div className="timeline-title">
+                                <strong>{t.eventNames[e.type]}</strong>
+                                <time>{dateTime(e.occurredAt, kitchen!)}</time>
+                              </div>
+                              {e.dropId && (
+                                <p>{view.drops.find((d) => d.id === e.dropId)?.recipientLabel}</p>
+                              )}
+                              <p>
+                                {t.roleNames[e.role]}
+                                {e.actorTag && ' · ' + e.actorTag} ·{' '}
+                                {e.tempC === undefined ? t.tempHint : `${e.tempC} °C`}
+                              </p>
+                              <p>
+                                {t.recorded}: {dateTime(e.recordedAt, kitchen!)}
+                              </p>
+                              {e.note && <p>{e.note}</p>}
+                              {!active ? (
+                                <p>{view.revoked.includes(e.id) ? t.revoked : t.superseded}</p>
+                              ) : (
+                                <button
+                                  className="no-print"
+                                  onClick={() => {
+                                    setDropId(e.dropId ?? batchDrops[0]!.id);
+                                    entryStart.current = performance.now();
+                                    selectPoint(e.type, e);
+                                  }}
+                                >
+                                  {t.correction}
+                                </button>
+                              )}
+                            </li>
+                          );
+                        })}
+                    </ol>
+                  </section>
+                  <section className="panel">
+                    <h2>
+                      {t.thresholdStatus}: {batch.threshold.status}
+                    </h2>
+                    <p>
+                      {t.source}: {batch.threshold.source}
+                    </p>
+                    {batch.threshold.verifiedBy && (
+                      <p>
+                        {t.verifiedBy}: {batch.threshold.verifiedBy} · {batch.threshold.verifiedAt}
+                      </p>
+                    )}
+                    <p>{t.privacy}</p>
+                  </section>
+                  <section className="panel">
+                    <h2>{t.resolve}</h2>
+                    <p>{t.resolveHint}</p>
+                    {view.resolutions
+                      .filter((r) => r.batchId === batchId)
+                      .map((r, i) => (
+                        <p key={i}>
+                          {dateTime(r.at, kitchen!)} · {r.note}
+                        </p>
+                      ))}
+                    <form
+                      className="stack no-print"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const note = String(new FormData(e.currentTarget).get('resolution'));
+                        void run(async () => {
+                          apply(
+                            await mutate((s) =>
+                              append(s, { kind: 'RESOLVE', batchId, note, at: nowISO() }),
+                            ),
+                          );
+                          setMessage(t.resolved);
+                        });
+                      }}
+                    >
+                      <Field label={t.resolution}>
+                        <textarea name="resolution" required maxLength={1000} />
+                      </Field>
+                      <button>{t.save}</button>
+                    </form>
+                  </section>
+                </>
+              )}
+              {screen === 'confirm' && batch && (
+                <form className="panel stack confirmation" onSubmit={(e) => void confirm(e)}>
+                  <p className="code">
+                    {batch.shortCode} · {batch.menuName}
+                  </p>
+                  <h1>{correction ? t.correcting : t.eventNames[point]}</h1>
+                  <h2>{t.eventNames[point]}</h2>
+                  {(point === 'ARRIVED' || point === 'SERVE_START') && (
+                    <p>{batchDrops.find((d) => d.id === dropId)?.recipientLabel}</p>
+                  )}
+                  <p className="auto-time">
+                    {t.automatic}
+                    <br />
+                    <strong>{localTime(now, kitchen!.timezone)}</strong>
+                  </p>
+                  <Field label={t.temperature}>
+                    <input
+                      name="temperature"
+                      type="number"
+                      step="0.1"
+                      inputMode="decimal"
+                      defaultValue={correction?.tempC ?? ''}
+                    />
+                  </Field>
+                  <p>{t.tempHint}</p>
+                  <details open={!!correction}>
+                    <summary>{t.adjust}</summary>
+                    <div className="stack">
+                      <Field label={t.occurred}>
+                        <input
+                          name="occurred"
+                          type="datetime-local"
+                          defaultValue={
+                            correction
+                              ? localDate(correction.occurredAt, kitchen!.timezone) +
+                                'T' +
+                                localTime(correction.occurredAt, kitchen!.timezone)
+                              : ''
+                          }
+                        />
+                      </Field>
+                      <Field label={t.role}>
+                        <select
+                          name="role"
+                          defaultValue={
+                            correction?.role ??
+                            (point === 'LOADED'
+                              ? 'DRIVER'
+                              : point === 'ARRIVED' || point === 'SERVE_START'
+                                ? 'RECEIVER'
+                                : point === 'PACKED'
+                                  ? 'PACKER'
+                                  : 'COOK')
+                          }
+                        >
+                          {ROLES.map((r) => (
+                            <option key={r} value={r}>
+                              {t.roleNames[r]}
+                            </option>
+                          ))}
+                        </select>
+                      </Field>
+                      <Field label={t.actor}>
+                        <input name="actor" maxLength={30} />
+                      </Field>
+                      <Field label={t.note}>
+                        <textarea name="note" maxLength={1000} />
+                      </Field>
+                    </div>
+                  </details>
+                  <button className="primary big" disabled={busy}>
+                    {t.confirm}
+                  </button>
+                  <button type="button" onClick={() => go('detail')}>
+                    {t.cancel}
+                  </button>
+                </form>
+              )}
+              {screen === 'label' && batch && (
+                <section className={'panel label-print ' + labelSize}>
+                  <div className="no-print">
+                    <h1>{t.label}</h1>
+                    <Field label={t.labelSize}>
+                      <select value={labelSize} onChange={(e) => setLabelSize(e.target.value)}>
+                        <option value="a6">{t.a6}</option>
+                        <option value="strip">{t.strip}</option>
+                      </select>
+                    </Field>
+                    <p>{t.printHint}</p>
+                  </div>
+                  <div className="label-body">
+                    <strong>{t.app}</strong>
+                    <h2>{batch.shortCode}</h2>
+                    <QR code={batch.shortCode} />
+                    <h3>{batch.menuName}</h3>
+                    <p>
+                      {batch.portions} {t.unitsPortions}
+                    </p>
+                    <p>{dateTime(batch.createdAt, kitchen!)}</p>
+                    <p>{t.warning}</p>
+                    <p>{t.privacy}</p>
+                  </div>
+                  <div className="row no-print">
+                    <button onClick={() => window.print()}>{t.print}</button>
+                    <button onClick={() => go('detail')}>{t.back}</button>
+                  </div>
+                </section>
+              )}
+              {screen === 'data' && (
+                <>
+                  <h1>{t.data}</h1>
+                  <section className="panel stack">
+                    <p>{t.privacy}</p>
+                    <p>{t.storageHint}</p>
+                    <button onClick={() => void persist()}>{t.persist}</button>
+                    {persistMessage && <p role="status">{persistMessage}</p>}
+                    <button onClick={() => void run(doBackup)}>{t.backup}</button>
+                    <Field label={t.restore}>
+                      <input
+                        type="file"
+                        accept=".json,application/json"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = '';
+                          if (!file) return;
+                          if (!window.confirm(t.restoreConfirm)) return;
+                          void (async () => {
+                            try {
+                              if (file.size > 50_000_000) throw new Error('size');
+                              apply(await restoreBackup(await file.text()));
+                              setError('');
+                              setMessage(t.restored);
+                            } catch {
+                              setError(t.invalidFile);
+                            }
+                          })();
+                        }}
+                      />
+                    </Field>
+                    <button
+                      onClick={() =>
+                        void run(async () => {
+                          apply(await readState());
+                          setMessage(t.hashValid);
+                        })
+                      }
+                    >
+                      {t.verify}
+                    </button>
+                    <p>{t.localMetrics}</p>
+                    <button
+                      onClick={() =>
+                        download('batchaman-metrik.csv', metricsCSV(view), 'text/csv;charset=utf-8')
+                      }
+                    >
+                      {t.exportMetrics}
+                    </button>
+                  </section>
+                  <section className="panel stack">
+                    <h2>{t.thresholdStatus}</h2>
+                    <p>{t.thresholdHint}</p>
+                    <Field label={t.importThreshold}>
+                      <input
+                        type="file"
+                        accept=".json,application/json"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          e.target.value = '';
+                          if (!file) return;
+                          void run(async () => {
+                            if (file.size > 100000) throw new Error('size');
+                            const thresholds = thresholdSetSchema.parse(
+                              JSON.parse(await file.text()),
+                            );
+                            apply(
+                              await mutate((s) => append(s, { kind: 'THRESHOLDS', thresholds })),
+                            );
+                            setMessage(t.thresholdImported);
+                          });
+                        }}
+                      />
+                    </Field>
+                    <Field label={t.sound}>
+                      <button
+                        aria-pressed={sound}
+                        onClick={() => {
+                          enableAudio();
+                          setSound(!sound);
+                        }}
+                      >
+                        {sound ? t.soundOn : t.soundOff}
+                      </button>
+                    </Field>
+                    <p>{t.alarmHint}</p>
+                  </section>
+                  {kitchen && (
+                    <section className="panel">
+                      <h2>{t.settings}</h2>
+                      <p>
+                        {kitchen.name} · {kitchen.code} · {kitchen.timezone}
+                      </p>
+                    </section>
+                  )}
+                </>
+              )}
+              {screen === 'about' && (
+                <section className="panel">
+                  <h1>{t.about}</h1>
+                  <ul className="about-list">
+                    {t.aboutItems.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                  <p>{t.storageHint}</p>
+                  <p>{t.alarmHint}</p>
+                  <p>{t.privacy}</p>
+                </section>
+              )}
+            </>
+          )}
+          <footer>{t.footer}</footer>
+        </main>
+      </div>
+    </>
+  );
 }
