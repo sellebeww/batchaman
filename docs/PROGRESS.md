@@ -36,3 +36,10 @@ Tidak ada klaim tes, cakupan, deployment atau skor performa sebelum pengukuran.
 - Playwright: 4/4 lulus (alur multi-tujuan, double tap/undo, peringatan/visibility, jaringan keluar/axe/320px).
 - Axe tanpa pelanggaran serius/kritis pada detail, tentang, data, telusuri, dasbor. Overflow URL sumber di 320px ditemukan dan diperbaiki.
 - Berikutnya: Fase 5 precache PWA dan pembuktian alur offline/restore. Kamera fisik dan hasil printer tetap memerlukan uji perangkat.
+
+## Fase 5 — selesai
+- Service worker mem-precache 16 aset (~905KiB mentah), termasuk QR/scanner fallback; tidak ada CDN.
+- 7/7 Playwright lulus: alur penuh dua tujuan offline, reload, backup/restore, metrik CSV, impor rusak, kamera ditolak, penyimpanan penuh/terhapus, jam mundur.
+- Temuan: pesan sukses lama dapat terlihat sebelum transaksi baru selesai. Pesan sekarang dihapus saat membuka konfirmasi baru; regression offline lulus.
+- Permintaan persist saat onboarding dan tombol ulang, pengingat cadangan harian, serta restore atomik tersedia.
+- Berikutnya: Fase 6 audit dependensi/lisensi, anggaran, Lighthouse, dan perluasan axe/perangkat lambat.
