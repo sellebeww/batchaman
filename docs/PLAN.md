@@ -3,6 +3,7 @@
 Alat bantu dapur gratis, open source, Bahasa Indonesia, PWA lokal. Tidak menyimpulkan keamanan pangan; tidak untuk kontrak pemerintah sebelum validasi. Semua data demo sintetis.
 
 ## Arsitektur
+
 - Workspace ini adalah akar monorepo pnpm; apps/web (React/Vite/TypeScript/Tailwind), packages/core (domain murni/Zod), packages/sim (seed deterministik), scripts, docs, .github.
 - IndexedDB/Dexie menyimpan profil, batch, tujuan, log append-only, metrik lokal. Transaksi atomik mengikat rantai hash dan perubahan data. Tidak ada akun, backend, sinkronisasi, sensor, AI, GPS, foto, telemetri, atau push.
 - Core menerima `now` eksplisit; UTC disimpan, zona dapur dipakai saat tampil dan pencarian tanggal. Paparan dihitung per tujuan, agregat mengambil status waktu terburuk; kelengkapan selalu terpisah.
@@ -11,6 +12,7 @@ Alat bantu dapur gratis, open source, Bahasa Indonesia, PWA lokal. Tidak menyimp
 - Workbox precache seluruh aset runtime termasuk scanner fallback. CSV/JSON/cetak dibuat lokal, dengan peringatan ambang dan privasi.
 
 ## Risiko dan mitigasi
+
 1. Klaim menyesatkan: banner UNVERIFIED permanen, bahasa status netral, laporan mencantumkan profil.
 2. Salah hitung: TDD core, property tests, >90% baris/cabang; interval tanpa dua suhu yang memenuhi profil tetap paparan.
 3. Jam salah/catatan belakangan: dua timestamp, flag terpisah, deteksi urutan dan jam perangkat; tidak mengklaim jam tepercaya.
@@ -19,6 +21,7 @@ Alat bantu dapur gratis, open source, Bahasa Indonesia, PWA lokal. Tidak menyimp
 6. Dependensi/deploy: gunakan versi terkunci; audit dan lisensi CI. Deployment nyata bergantung remote GitHub/akses yang tersedia.
 
 ## Urutan dan gerbang fase
+
 0. PLAN, ASSUMPTIONS, OPEN_QUESTIONS konsisten; tanpa kode aplikasi.
 1. Monorepo strict, lint/format, unit/e2e tooling, CI; jalankan lint/typecheck/test/build.
 2. Core TDD: validasi, exposure, kualitas, hash, ambang; AC-09 dan cakupan >=90%.

@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@batchaman/core": ["./packages/core/src/index.ts"],
+      "@batchaman/sim": ["./packages/sim/src/index.ts"]
+    }
+  },
+  "include": ["apps", "packages", "scripts", "*.ts"]
+}
