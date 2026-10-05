@@ -17,3 +17,9 @@ Tidak ada klaim tes, cakupan, deployment atau skor performa sebelum pengukuran.
 - `pnpm check`: lint, typecheck, 1 tes fondasi, build lulus. JS fondasi 69,22KB gzip.
 - pnpm via corepack, cache lokal `.corepack`; gunakan `COREPACK_HOME="$PWD/.corepack" corepack pnpm ...` pada mesin ini.
 - Berikutnya: Fase 2 TDD core. Audit/dependency modernization dilakukan pada Fase 6; lockfile merekam versi aktual.
+
+## Fase 2 — selesai
+- TDD: 60 tes gagal sebelum implementasi; 65 tes kemudian lulus (termasuk empat properti fast-check).
+- Cakupan core: baris 100%, cabang 95,72%, fungsi 100%. AC-09 tamper/insert/reorder/head lulus.
+- Tiga zona, lintas tengah malam, tiap profil, duplikat, multi-tujuan, supersedes, titik hilang, suhu kosong dan jam mundur tercakup.
+- Berikutnya: simulator deterministik; validasi relasi koreksi/restore ditambahkan pada lapisan persistensi.
