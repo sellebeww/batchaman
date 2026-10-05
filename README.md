@@ -8,11 +8,13 @@
 
 PWA open source berbahasa Indonesia untuk mencatat perjalanan satu batch makanan dari selesai masak sampai mulai dibagikan. Semua data tinggal di perangkat; semua data contoh sintetis. Tidak ada akun, backend, sinkronisasi, GPS, foto orang, AI, telemetri, atau notifikasi ketika aplikasi tertutup.
 
-![Dasbor dengan enam batch sintetis](docs/screenshots/dashboard.png)
+Tampilan UI terbaru dengan data sintetis:
+
+![Dasbor BatchAman terbaru dengan ringkasan batch, porsi, dan peringatan waktu](docs/screenshots/dashboard.png?v=ui-refresh-3)
 
 <details><summary>Tampilan ponsel</summary>
 
-![Linimasa batch sintetis di ponsel](docs/screenshots/detail-mobile.png)
+![Tampilan UI terbaru: detail dan linimasa batch sintetis di ponsel](docs/screenshots/detail-mobile.png?v=ui-refresh-3)
 
 </details>
 
@@ -78,7 +80,7 @@ node scripts/check-licenses.mjs licenses.json
 
 ## Demo GitHub Pages
 
-[**Buka DEMO sintetis**](https://sellebeww.github.io/batchaman/) · [Source GitHub](https://github.com/sellebeww/batchaman)
+[**Buka DEMO sintetis**](https://sellebeww.github.io/Batch-Aman/) · [Source GitHub](https://github.com/sellebeww/Batch-Aman)
 
 Workflow `.github/workflows/pages.yml` membangun mode DEMO dengan penyimpanan terpisah dan data sintetis awal. Pengelola mengaktifkan Pages → GitHub Actions, lalu push main; deployment berjalan setelah CI sukses. Status URL aktual dicatat di [DEPLOYMENT.md](docs/DEPLOYMENT.md); keberadaan workflow saja tidak berarti sudah terdeploy.
 

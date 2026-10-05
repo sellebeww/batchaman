@@ -53,6 +53,7 @@ export function simulate({
   const batches: Batch[] = [],
     drops: Drop[] = [],
     events: BatchEvent[] = [];
+  const recordingOrder = new Map<string, number>();
   for (let day = 0; day < days; day++)
     for (let n = 0; n < batchesPerDay; n++) {
       const kind = scenario ?? SCENARIOS[n % SCENARIOS.length]!;
@@ -94,7 +95,8 @@ export function simulate({
             ? {}
             : { tempC: 65 + Math.floor(random() * 5) }),
         };
-        events.push(signEvent(input, events.at(-1)?.hash ?? ''));
+        recordingOrder.set(input.id, Date.parse(at(m + (kind === 'late-entry' ? 30 : 0))));
+        events.push(signEvent(input, ''));
       };
       add('COOK_DONE', 0);
       add('PACKED', 15);
@@ -113,5 +115,12 @@ export function simulate({
         add('SERVE_START', kind === 'late-delivery' ? 180 : 60 + d * 30, dropId);
       }
     }
+  // Interleave simultaneous batches in actual entry order. The clock-shift scenario
+  // intentionally keeps its incorrect recordedAt, rather than sorting it away.
+  events.sort(
+    (a, b) => recordingOrder.get(a.id)! - recordingOrder.get(b.id)! || a.id.localeCompare(b.id),
+  );
+  for (let i = 0; i < events.length; i++)
+    events[i] = signEvent(events[i]!, events[i - 1]?.hash ?? '');
   return { kitchen, batches, drops, events };
 }

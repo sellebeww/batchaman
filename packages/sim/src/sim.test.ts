@@ -29,3 +29,20 @@ test.each(SCENARIOS)('synthetic fixture %s uses core', (scenario) => {
   if (scenario === 'multi-drop') expect(a.drops).toHaveLength(2);
 });
 test('invalid dimensions fail', () => expect(() => simulate({ days: 0 })).toThrow());
+test('normal overlapping batches preserve device chronology without false clock flags', () => {
+  const data = simulate({ days: 2, batchesPerDay: 6, scenario: 'normal' });
+  expect(verifyChain(data.events)).toBe(true);
+  for (const drop of data.drops) {
+    const batch = data.batches.find((b) => b.id === drop.batchId)!;
+    expect(
+      calculate(
+        data.events,
+        batch.id,
+        drop.id,
+        batch.foodProfile,
+        batch.threshold,
+        '2026-10-07T00:00:00Z',
+      ).flags,
+    ).toEqual([]);
+  }
+});

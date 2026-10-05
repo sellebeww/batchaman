@@ -18,3 +18,12 @@ Logo baru dibuat menggunakan skill imagegen atas permintaan pengguna: wadah maka
 Sumber transparan: [PNG asli](brand/batchaman-logo-original.png). Aset aplikasi: `apps/web/public/brand/batchaman-mark.png` (256px), `icon-192.png`, `icon-512.png`. Varian aplikasi hanya diperkecil dari hasil generasi; alpha dipertahankan. Ikon manifest menggunakan purpose `any`, sehingga tidak menjanjikan maskable safe area yang belum dirancang. Logo dibundel dan diprecache lokal; tidak ada fitur AI di aplikasi.
 
 Gunakan ruang kosong di sekitar simbol dan teks BatchAman terpisah agar wordmark tetap tajam. Jangan memakai logo sebagai stempel persetujuan ahli. Screenshot hasil nyata ada di `docs/screenshots/`.
+
+## Penyempurnaan alur dan pembaruan
+
+- Pencarian kode, menu, dan tujuan tersedia di dasbor; jumlah hasil dan tombol hapus filter membantu pengguna kembali ke daftar lengkap.
+- Hasil kosong menyediakan akses ke semua tanggal atau pembuatan batch. Tanggal historis diberi judul Ringkasan batch.
+- Formulir menunjukkan total porsi tujuan dibanding porsi batch sebelum disimpan. Keterlambatan ditulis sebagai durasi melewati batas, bukan sisa waktu negatif.
+- Label navigasi ponsel diperbesar; pergantian menu tidak memakai transisi warna yang menurunkan kontras sesaat.
+- Versi aplikasi baru ditawarkan melalui tombol pembaruan setelah tersedia. Aplikasi tidak memuat ulang otomatis saat pengguna sedang mengisi formulir.
+- Demo sebelum 06.00 WIB menggunakan contoh kemarin; kunjungan berikutnya tetap membuka tanggal contoh terakhir, tanpa menghapus data lokal.

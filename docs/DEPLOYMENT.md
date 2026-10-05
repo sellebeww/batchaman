@@ -8,13 +8,19 @@ Pengelola: buat repo, push main, aktifkan Pages dengan sumber GitHub Actions. Ak
 
 ## Deployment terverifikasi
 
-- Repo: https://github.com/sellebeww/batchaman
-- Demo: https://sellebeww.github.io/batchaman/
-- Deployment pertama: https://github.com/sellebeww/batchaman/actions/runs/37279564950 (sukses, source e7dc37d).
+- Repo: https://github.com/sellebeww/Batch-Aman
+- Demo: https://sellebeww.github.io/Batch-Aman/
+- Deployment pertama: https://github.com/sellebeww/Batch-Aman/actions/runs/37279564950 (sukses, source e7dc37d).
 - Browser sungguhan memverifikasi HTTP 200, enam batch sintetis, label DEMO, service worker terkontrol dan reload offline; tidak ada page error.
 - Private vulnerability reporting aktif pada repo. Tidak ada data operasional yang dipublikasikan.
 - Commit perbaikan berikutnya hanya diterbitkan setelah CI sukses; SHA deployment terbaru dicatat di PROGRESS.md.
 
-## Rilis terbaru
+## Bukti rilis sebelumnya
 
-Source `2a39fecaa2489eee015385cf2a05908d63fbff05` lulus [CI](https://github.com/sellebeww/batchaman/actions/runs/37306919230) dan [deployment](https://github.com/sellebeww/batchaman/actions/runs/37307143572). Pemeriksaan langsung pada URL publik membuktikan HTTP 200, enam batch sintetis, tombol langsung per tujuan, service worker aktif dan reload offline tanpa galat browser. [Bukti JSON](evidence/public-demo-verification.json) merekam waktu dan commit. Perubahan dokumentasi setelahnya tidak mengubah bundle yang diuji.
+Source `2a39fecaa2489eee015385cf2a05908d63fbff05` lulus [CI](https://github.com/sellebeww/Batch-Aman/actions/runs/37306919230) dan [deployment](https://github.com/sellebeww/Batch-Aman/actions/runs/37307143572). Pemeriksaan langsung pada URL publik membuktikan HTTP 200, enam batch sintetis, tombol langsung per tujuan, service worker aktif dan reload offline tanpa galat browser. [Bukti JSON](evidence/public-demo-verification.json) merekam waktu dan commit. Perubahan dokumentasi setelahnya tidak mengubah bundle yang diuji.
+
+## Perbaikan deployment dan pembaruan UI
+
+Deployment UI sebelumnya tertahan oleh pengujian DEMO yang memakai jam mesin CI sebelum waktu kejadian sintetis. Tes kini memeriksa waktu tetap pukul 00.30 dan 12.00 WIB. Sebelum pukul 06.00 WIB, contoh menggunakan tanggal kemarin agar semua kejadian sudah berlalu; dasbor demo membuka tanggal contoh terbaru dan tetap menampilkan filter tanggalnya. Repo dan URL Pages telah berganti menjadi `Batch-Aman`; gunakan tautan demo di atas.
+
+Aplikasi memberi pemberitahuan saat versi baru siap. Selesaikan input, lalu pilih **Perbarui aplikasi**; pembaruan tidak menghapus catatan lokal. Untuk versi lama yang belum memiliki pemberitahuan ini, tutup seluruh tab aplikasi lalu buka kembali URL terbaru.

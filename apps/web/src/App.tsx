@@ -47,6 +47,8 @@ import {
 } from './store';
 import { t } from './i18n/id';
 import { Icon } from './Icon';
+import { AppUpdate } from './AppUpdate';
+import { demoDate } from './demo';
 import { download, metricsCSV, reportCSV } from './reports';
 import { enableAudio, notifyWarning } from './alerts';
 const Scanner = lazy(() => import('./Scanner'));
@@ -75,9 +77,12 @@ function Status({ r }: { r: Exposure }) {
       </div>
       {r.remainingMinutes !== null && (
         <p>
-          {t.remaining}:{' '}
+          {r.remainingMinutes < 0 ? t.overdue : t.remaining}:{' '}
           <b>
-            {Math.floor(r.remainingMinutes)} {t.minutes}
+            {r.remainingMinutes < 0
+              ? Math.ceil(-r.remainingMinutes)
+              : Math.floor(r.remainingMinutes)}{' '}
+            {t.minutes}
           </b>{' '}
           · {t.exposure}: {Math.ceil(r.dangerMinutes!)} {t.minutes}
         </p>
@@ -138,6 +143,7 @@ function BatchForm({
   const [dest, setDest] = useState([
     { recipientLabel: '', portions: 100, routeLabel: '', vehicleLabel: '' },
   ]);
+  const [portions, setPortions] = useState(100);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const update = (i: number, key: string, value: string | number) =>
@@ -170,7 +176,15 @@ function BatchForm({
           <input name="menu" required maxLength={120} />
         </Field>
         <Field label={t.portions}>
-          <input name="portions" type="number" min={1} max={100000} defaultValue={100} required />
+          <input
+            name="portions"
+            type="number"
+            min={1}
+            max={100000}
+            value={portions}
+            onChange={(e) => setPortions(Number(e.target.value))}
+            required
+          />
         </Field>
         <Field label={t.profile}>
           <select name="profile">
@@ -238,6 +252,12 @@ function BatchForm({
       >
         + {t.addDrop}
       </button>
+      <p className="allocation-summary" role="status">
+        {t.portionsAssigned}:{' '}
+        <strong>
+          {dest.reduce((sum, d) => sum + d.portions, 0)} / {portions}
+        </strong>
+      </p>
       <p>{t.createHint}</p>
       {error && <p role="alert">{error}</p>}
       <button className="primary" disabled={busy}>
@@ -462,18 +482,26 @@ export default function App() {
       confirmLock.current = false;
     }
   };
-  const selectedDate = date || (kitchen ? localDate(now, kitchen.timezone) : '');
+  const today = kitchen ? localDate(now, kitchen.timezone) : '';
+  const latestDemoDate =
+    kitchen?.code === 'DEMO'
+      ? view.batches
+          .map((b) => localDate(b.createdAt, kitchen.timezone))
+          .sort()
+          .at(-1)
+      : undefined;
+  const selectedDate = date || latestDemoDate || today;
   const filtered = view.batches.filter(
     (b) =>
       (screen === 'trace'
         ? !date || localDate(b.createdAt, kitchen!.timezone) === date
         : localDate(b.createdAt, kitchen!.timezone) === selectedDate) &&
-      (!query ||
+      (!query.trim() ||
         [
           b.shortCode,
           b.menuName,
           ...view.drops.filter((d) => d.batchId === b.id).map((d) => d.recipientLabel),
-        ].some((s) => s.toLowerCase().includes(query.toLowerCase()))),
+        ].some((s) => s.toLowerCase().includes(query.trim().toLowerCase()))),
   );
   const batchStatus = (b: Batch) =>
     aggregate(view.drops.filter((d) => d.batchId === b.id).map((d) => results.get(d.id)!));
@@ -507,7 +535,7 @@ export default function App() {
   const synthetic = async () =>
     run(async () => {
       const { simulate } = await import('@batchaman/sim');
-      const data = simulate({ start: localDate(now, 'Asia/Jakarta') });
+      const data = simulate({ start: demoDate(now) });
       let s = append(newState(), { kind: 'KITCHEN', kitchen: data.kitchen });
       for (const b of data.batches)
         s = append(s, {
@@ -610,6 +638,7 @@ export default function App() {
           </div>
         </aside>
         <main id="main-content" ref={heading} tabIndex={-1} className={'content screen-' + screen}>
+          <AppUpdate />
           {warning && (
             <aside className="warning" role="note">
               <b aria-hidden="true">!</b>
@@ -674,7 +703,13 @@ export default function App() {
                       <p className="eyebrow">
                         {kitchen?.code} · {kitchen && t.zones[kitchen.timezone]}
                       </p>
-                      <h1>{screen === 'today' ? t.today : t.summary}</h1>
+                      <h1>
+                        {screen === 'today'
+                          ? selectedDate === today
+                            ? t.today
+                            : 'Ringkasan batch'
+                          : t.summary}
+                      </h1>
                       <p className="heading-caption">
                         {screen === 'today' ? t.dashboardIntro : t.scanHint}
                       </p>
@@ -728,13 +763,16 @@ export default function App() {
                       />
                     </Field>
                     {screen === 'trace' && (
-                      <>
-                        <button onClick={() => setDate('')}>{t.clearDate}</button>
-                        <Field label={t.search}>
-                          <input value={query} onChange={(e) => setQuery(e.target.value)} />
-                        </Field>
-                      </>
+                      <button onClick={() => setDate('')}>{t.clearDate}</button>
                     )}
+                    <Field label={t.search}>
+                      <input
+                        type="search"
+                        placeholder="Kode, menu, atau tujuan…"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                      />
+                    </Field>
                     <button onClick={() => exportBatches(filtered)}>
                       {screen === 'today' ? t.exportDaily : t.exportCsv}
                     </button>
@@ -753,6 +791,19 @@ export default function App() {
                             : t.incompleteFilter}
                       </button>
                     ))}
+                  </div>
+                  <div className="results-summary no-print">
+                    <p role="status">{visibleBatches.length} batch ditampilkan</p>
+                    {(query || batchFilter !== 'all') && (
+                      <button
+                        onClick={() => {
+                          setQuery('');
+                          setBatchFilter('all');
+                        }}
+                      >
+                        {t.resetFilters}
+                      </button>
+                    )}
                   </div>
                   <div className="batch-grid">
                     {visibleBatches.length ? (
@@ -808,8 +859,25 @@ export default function App() {
                     ) : (
                       <div className="panel empty-state">
                         <Icon name="tray" />
-                        <h2>{batchFilter === 'all' ? t.empty : t.noMatch}</h2>
-                        <p>{batchFilter === 'all' ? t.emptyHint : t.noMatchHint}</p>
+                        <h2>{batchFilter === 'all' && !query.trim() ? t.empty : t.noMatch}</h2>
+                        <p>
+                          {batchFilter === 'all' && !query.trim() ? t.emptyHint : t.noMatchHint}
+                        </p>
+                        <div className="row">
+                          <button className="primary" onClick={() => go('create')}>
+                            {t.create}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDate('');
+                              setQuery('');
+                              setBatchFilter('all');
+                              go('trace');
+                            }}
+                          >
+                            {t.allDates}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

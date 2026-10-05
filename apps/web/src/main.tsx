@@ -1,7 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { append, mutate, readState } from './store';
-import { localDate } from '@batchaman/core';
+import { demoDate } from './demo';
 import { t } from './i18n/id';
 import './styles.css';
 async function boot() {
@@ -14,7 +14,7 @@ async function boot() {
       const state = await readState();
       if (!state.entries.length) {
         const { simulate } = await import('@batchaman/sim');
-        const data = simulate({ start: localDate(new Date().toISOString(), 'Asia/Jakarta') });
+        const data = simulate({ start: demoDate(new Date().toISOString()) });
         await mutate((s) => {
           if (s.entries.length) return s;
           let next = append(s, { kind: 'KITCHEN', kitchen: data.kitchen });

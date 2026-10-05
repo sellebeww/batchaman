@@ -390,3 +390,28 @@ test('security: integrity failure clears stale dashboard before recovery', async
   await expect(page.getByRole('button', { name: 'Buat batch', exact: true })).toBeDisabled();
   await expect(page.getByLabel('Pulihkan cadangan JSON')).toBeVisible();
 });
+
+test('UI: dashboard search, filter recovery and previous dates stay reachable', async ({
+  page,
+}) => {
+  await page.clock.setFixedTime(new Date('2026-10-05T05:00:00Z'));
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Coba dengan data sintetis' }).click();
+  await page.getByLabel('Cari kode, menu, atau tujuan').fill('  late-delivery  ');
+  await expect(page.locator('.batch-card')).toHaveCount(1);
+  await page.getByLabel('Cari kode, menu, atau tujuan').fill('tidak ditemukan');
+  await expect(
+    page.getByRole('heading', { name: 'Tidak ada batch yang sesuai filter.' }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Hapus pencarian & filter' }).click();
+  await expect(page.locator('.batch-card')).toHaveCount(6);
+  await page.getByLabel('Tanggal dapur').fill('2026-10-04');
+  await page.getByRole('button', { name: 'Lihat semua tanggal' }).click();
+  await expect(page.locator('.batch-card')).toHaveCount(6);
+  for (const width of [320, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+  }
+});
