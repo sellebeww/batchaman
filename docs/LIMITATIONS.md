@@ -15,3 +15,5 @@
 - Penyimpanan satu ledger diproyeksikan ulang saat perubahan. Sesuai pilot kecil; pertumbuhan sangat besar akan memperlambat pembacaan/penulisan. Tidak ada pruning log. Batas cadangan 50 MB dan 100.000 entri bukan klaim performa pada ukuran tersebut.
 - Nama/kode dapur tidak dapat diedit setelah onboarding di MVP; buat cadangan dan siapkan instalasi baru jika salah. Riwayat yang sudah tercatat tidak diubah diam-diam.
 - Belum ada validasi lapangan, pengujian laboratorium, atau bukti nilai tambah terhadap checklist kertas. Tidak boleh dijual sebagai jaminan keamanan atau sistem resmi pemerintah.
+
+- Tombol unduh memulai penyimpanan berkas di browser; aplikasi tidak dapat memastikan pengguna benar-benar menyimpan atau menyalin berkas keluar perangkat. Periksa berkas cadangan dan lakukan uji pemulihan.

@@ -4,21 +4,23 @@
 
 ## Status fase
 
-| Fase | Status   | Bukti / batasan                                                                                      |
-| ---- | -------- | ---------------------------------------------------------------------------------------------------- |
-| 0    | Selesai  | PLAN, ASSUMPTIONS, OPEN_QUESTIONS sebelum kode aplikasi                                              |
-| 1    | Selesai  | Monorepo strict, lint/typecheck/test/build, CI                                                       |
-| 2    | Selesai  | Mesin paparan dan hash; cakupan di atas 90%                                                          |
-| 3    | Selesai  | Seed deterministik, enam skenario sintetis                                                           |
-| 4    | Selesai  | Alur MVP, QR, multi-tujuan, linimasa, ekspor                                                         |
-| 5    | Selesai  | PWA/offline penuh, cadangan/pemulihan/metrik                                                         |
-| 6    | Sebagian | Tes lokal/axe/budget/lisensi lulus; Lighthouse dan advisori menunggu CI; perangkat fisik belum diuji |
-| 7    | Sebagian | Dokumen dan workflow DEMO lengkap; URL publik menunggu deployment                                    |
-| 8    | Selesai  | Kit pilot, templat, analisis CSV dan 9 tes skrip                                                     |
+| Fase | Status           | Bukti / batasan                                                                         |
+| ---- | ---------------- | --------------------------------------------------------------------------------------- |
+| 0    | Selesai          | PLAN, ASSUMPTIONS, OPEN_QUESTIONS sebelum kode aplikasi                                 |
+| 1    | Selesai          | Monorepo strict, lint/typecheck/test/build, CI                                          |
+| 2    | Selesai          | Mesin paparan dan hash; cakupan di atas 90%                                             |
+| 3    | Selesai          | Seed deterministik, enam skenario sintetis                                              |
+| 4    | Selesai          | Alur MVP, QR, multi-tujuan, linimasa, ekspor                                            |
+| 5    | Selesai          | PWA/offline penuh, cadangan/pemulihan/metrik                                            |
+| 6    | Selesai otomatis | Tes/axe/budget/lisensi/audit lulus; Lighthouse 92/100. Perangkat fisik belum diuji      |
+| 7    | Selesai          | Dokumen open source dan [DEMO publik](https://sellebeww.github.io/batchaman/) terpasang |
+| 8    | Selesai          | Kit pilot, templat, analisis CSV dan 9 tes skrip                                        |
 
 ## Hasil terukur
 
-100 tes lokal lulus. Cakupan core 99,26% baris, 97,5% cabang, 100% fungsi. E2E operasional 9/9 lulus; axe tidak menemukan pelanggaran serius/kritis di semua layar utama. CPU 6× dan layar 320px diuji. JavaScript awal 142,16KiB gzip. 39 lisensi produksi diperiksa. Skor Lighthouse belum diisi sebelum laporan dihasilkan; kategori skor PWA modern tidak tersedia, diuji melalui alur offline/manifest/SW.
+101 tes lokal lulus. Cakupan core (Vitest 4.1.11): 99,11% baris, 95,41% cabang, 100% fungsi. E2E operasional 9/9 dan DEMO 1/1 lulus; axe tidak menemukan pelanggaran serius/kritis di semua layar utama. CPU 6× dan layar 320px diuji. JavaScript awal sekitar 142,2KiB gzip (batas 200KiB). 39 lisensi produksi diperiksa. Audit dependensi setelah pembaruan Vitest: nol advisori pada 2026-10-05.
+
+Lighthouse 13.5.0 mobile: Performance **92**, Accessibility **100** pada CI pertama; commit dan sumber pengukuran dicatat di [bukti JSON](evidence/lighthouse-summary.json). Kategori skor PWA modern tidak tersedia; manifest, service worker dan alur offline diuji langsung. Verifikasi URL publik berhasil: HTTP 200, enam batch sintetis, banner DEMO, service worker aktif, reload offline, tanpa galat browser. Bukti dan batas pengukuran: [QUALITY.md](QUALITY.md).
 
 ## AC-01–15
 

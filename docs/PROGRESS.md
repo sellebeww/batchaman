@@ -1,5 +1,9 @@
 # Progres
 
+## Status terkini
+
+Fase 0–8 telah diimplementasikan; kualitas otomatis dan deployment pertama lulus. Verifikasi ahli, pilot dan perangkat fisik belum dilakukan. Catatan di bawah adalah riwayat, sehingga status tertunda pada fase awal dibaca bersama tindak lanjut terakhir.
+
 ## Fase 0 — selesai
 
 - PLAN.md, ASSUMPTIONS.md, OPEN_QUESTIONS.md diperiksa konsisten terhadap permintaan.
@@ -71,3 +75,11 @@
 - `pnpm check` + `pnpm coverage`: 100 tes lulus; core 99,26% baris, 97,5% cabang.
 - E2E operasional 9/9 lulus; bundle awal 142,16KiB gzip. Pilot parser diuji terhadap BOM/CRLF, kutip/newline, pembanding hilang/ganda, serta kolom metrik hilang.
 - Gerbang yang tersisa: CI advisori/Lighthouse dan URL Pages. Verifikasi ahli serta pilot nyata tetap pekerjaan manusia.
+
+## Penutupan kualitas dan publikasi
+
+- 101 tes lulus; Vitest 4.1.11: core 99,11% baris / 95,41% cabang. E2E 9/9 operasional dan 1/1 DEMO; axe tanpa temuan serius/kritis.
+- Lighthouse CI pertama 92 Performance / 100 Accessibility; demo Pages berhasil dipasang dan diuji offline pada URL publik.
+- Audit menemukan dua advisori moderate alat tes; pembaruan Vitest menutup keduanya, audit ulang lokal nol advisori. CI mengulang seluruh gerbang pada commit perbaikan.
+- Regresi dua ketukan untuk tujuan kedua diperbaiki dan diuji. Laporan lengkap: FINAL_REPORT.md; matriks: ACCEPTANCE.md.
+- Berikutnya: konfirmasi CI/deployment perbaikan, lalu serahkan verifikasi ambang dan persiapan pilot kepada manusia.

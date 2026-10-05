@@ -76,6 +76,8 @@ node scripts/check-licenses.mjs licenses.json
 
 ## Demo GitHub Pages
 
+[**Buka DEMO sintetis**](https://sellebeww.github.io/batchaman/) · [Source GitHub](https://github.com/sellebeww/batchaman)
+
 Workflow `.github/workflows/pages.yml` membangun mode DEMO dengan penyimpanan terpisah dan data sintetis awal. Pengelola mengaktifkan Pages → GitHub Actions, lalu push main; deployment berjalan setelah CI sukses. Status URL aktual dicatat di [DEPLOYMENT.md](docs/DEPLOYMENT.md); keberadaan workflow saja tidak berarti sudah terdeploy.
 
 ## English summary

@@ -1,13 +1,14 @@
 # Bukti kualitas (2026-10-05)
 
-- 88 tes unit/properti/komponen/storage lulus sebelum kit pilot ditambahkan.
-- Core: 100% baris, 97,5% cabang, 100% fungsi pada pengukuran Fase 5. Jalankan `pnpm coverage` untuk angka terbaru.
-- Playwright: 9/9 lulus. Axe: tidak ada pelanggaran serius/kritis pada onboarding, buat batch, konfirmasi, detail, label, dasbor, penelusuran, data, tentang.
-- Layar 320px tidak overflow setelah perbaikan URL panjang. Alur utama dan axe juga lulus dengan CPU diperlambat 6× (emulasi Chromium; bukan bukti perangkat Android 2GB nyata).
-- JS awal: 142,02KiB gzip; gerbang `pnpm budget` menghitung entry + impor statis, mengecualikan chunk scanner/QR/simulator yang lazy. Total precache sekitar 905KiB mentah.
-- Lisensi: 39 paket produksi diperiksa; MIT, ISC, Apache-2.0, dan dual Unlicense/Apache-2.0 (dipilih Apache-2.0). Daftar tanpa path perangkat di `dependency-licenses.json`.
-- Lighthouse lokal: BELUM TERUKUR. Registry npm timeout saat mengunduh alat. Jangan mengklaim skor >=90 tanpa laporan JSON.
-- Audit advisori dependensi: BELUM SELESAI, request registry timeout. CI wajib menjalankan `pnpm audit --audit-level high`; kegagalan jaringan bukan hasil audit bersih.
+- `pnpm check` dan `pnpm coverage`: **101/101 tes lulus**; lint/typecheck/build lulus.
+- Core pada Vitest 4.1.11: **99,11% baris, 95,41% cabang, 100% fungsi**, di atas gerbang 90%. Angka sebelumnya memakai instrumentasi Vitest 3; gunakan pengukuran terbaru ini.
+- Playwright operasional **9/9**, DEMO **1/1** lulus. Axe tanpa pelanggaran serius/kritis pada semua layar utama.
+- Layar 320px tidak overflow; alur dan axe lulus dengan CPU 6×. Ini emulasi Chromium, bukan perangkat Android 2GB nyata.
+- JS awal sekitar **142,2KiB gzip**, di bawah 200KiB. Gerbang menghitung entry + impor statis; scanner/QR/simulator lazy. Total precache sekitar 905KiB mentah.
+- Lisensi: 39 paket produksi diperiksa; daftar di `dependency-licenses.json`, teks atribusi dibundel lokal.
+- Lighthouse 13.5.0 mobile dari CI: **Performance 92 / Accessibility 100**. [Bukti pengukuran dan commit](evidence/lighthouse-summary.json).
+- Audit 2026-10-05: **nol advisori** setelah Vitest/coverage-v8 dipatok 4.1.11 untuk menutup [GHSA-82fw-gwwq-j7x9](https://github.com/vitest-dev/vitest/security/advisories/GHSA-82fw-gwwq-j7x9). Dua advisori moderate sebelumnya berasal dari alat tes, bukan bundle produksi. Audit lokal menggunakan registry Yarn karena npm timeout; [bukti JSON](evidence/audit-summary.json). CI mengulang audit dari registry default.
+- DEMO publik telah diverifikasi pada subpath Pages: HTTP 200, service worker, enam batch sintetis dan reload offline tanpa galat browser.
 - Kategori PWA Lighthouse telah dihapus sejak v12 menurut [catatan resmi Google](https://developers.google.com/speed/docs/insights/release_notes). Maka skor PWA >=90 tidak tersedia pada Lighthouse modern; manifest, kontrol service worker, precache lazy assets, dan alur offline diuji eksplisit di Playwright. Ini penggantian metode ukur, bukan angka PWA rekaan.
 
 ## Audit adversarial
@@ -30,10 +31,6 @@
 
 Kamera fisik iOS, thermal printer 58mm/A6, ketahanan Safari terhadap eviction, kondisi tangan basah, sinar matahari, baterai dan Android 2GB perlu pengujian nyata. Tidak ada klaim telah diuji pada perangkat fisik. Tidak ada notifikasi saat aplikasi ditutup. Aturan kelayakan pangan belum divalidasi ahli.
 
-## Validasi akhir lokal sesudah kit pilot
+## Regresi akhir
 
-- `pnpm check` dan `pnpm coverage`: **100/100 tes lulus**, core **99,26% baris / 97,5% cabang / 100% fungsi**. Perbedaan persentase baris dari fase awal terjadi setelah pemformatan memperluas cabang yang belum dieksekusi ke baris terpisah; gerbang >=90% tetap lulus.
-- `pnpm e2e`: **9/9 lulus** pada build operasional terbaru.
-- `pnpm budget`: **142,16KiB gzip**, di bawah 200KiB.
-- Tambahan bukti: bunyi singkat aktif/mute, permintaan persist saat onboarding, dan analisis pilot dari CSV ekspor asli.
-- Build DEMO diuji terpisah: **1/1 smoke test lulus**, enam batch sintetis otomatis, label DEMO tetap tampil, reload offline berhasil.
+Dua ketukan juga dibuktikan untuk tujuan kedua, tanpa dropdown tambahan. Bukti lainnya mencakup bunyi/mute, permintaan persist saat onboarding, dan analisis pilot dari CSV ekspor asli. Semua hasil ini mengukur perilaku perangkat lunak; validasi ahli dan pilot belum dilakukan.

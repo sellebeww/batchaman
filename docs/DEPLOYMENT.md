@@ -6,4 +6,11 @@ GitHub Pages workflow menunggu CI sukses untuk commit main dari push, checkout S
 
 Pengelola: buat repo, push main, aktifkan Pages dengan sumber GitHub Actions. Aktifkan private vulnerability reporting sebelum menerima laporan sensitif. Buka URL hasil deploy, periksa banner DEMO, tunggu SW ready, lalu uji offline. Catat URL dan SHA yang diuji di bawah.
 
-Status saat dokumen dibuat: source/workflow siap; URL publik belum diverifikasi. Diperbarui setelah deployment nyata berhasil.
+## Deployment terverifikasi
+
+- Repo: https://github.com/sellebeww/batchaman
+- Demo: https://sellebeww.github.io/batchaman/
+- Deployment pertama: https://github.com/sellebeww/batchaman/actions/runs/37279564950 (sukses, source e7dc37d).
+- Browser sungguhan memverifikasi HTTP 200, enam batch sintetis, label DEMO, service worker terkontrol dan reload offline; tidak ada page error.
+- Private vulnerability reporting aktif pada repo. Tidak ada data operasional yang dipublikasikan.
+- Commit perbaikan berikutnya hanya diterbitkan setelah CI sukses; SHA deployment terbaru dicatat di PROGRESS.md.

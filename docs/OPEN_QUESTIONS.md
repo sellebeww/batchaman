@@ -6,5 +6,9 @@
 4. Apakah satu perangkat ikut batch sampai penerima, atau bagaimana prosedur pencatatan lokal tanpa sinkronisasi? Banyak perangkat tanpa transfer dapat menghasilkan riwayat yang terpisah.
 5. Apa perangkat Android/iOS minimum, termometer yang dikalibrasi, dan printer A6/58mm untuk uji nyata? Uji otomatis tidak menggantikan uji lapangan.
 6. **BELUM TERVERIFIKASI — hukum**: Prinsip minimisasi dimaksudkan selaras dengan semangat UU PDP No.27/2022, bukan pernyataan kepatuhan. Pengguna produksi perlu konsultasi ahli hukum tentang izin, retensi, akses, dan berbagi ekspor.
-7. Siapa pengelola repo publik, kanal kerentanan privat, serta remote GitHub untuk aktivasi Pages? Publikasi tidak dapat diklaim sebelum URL deployment nyata terverifikasi.
+7. Siapa yang bertanggung jawab menanggapi laporan kerentanan dan memelihara rilis setelah pilot? Repo, kanal privat dan Pages sudah aktif; tanggung jawab operasional tetap perlu disepakati.
 8. Apakah batas lompatan jam 24 jam memadai? Tanpa sumber waktu tepercaya, deteksi hanya heuristik.
+
+## Hal teknis yang sudah terjawab
+
+Repo dan Pages tersedia pada https://github.com/sellebeww/batchaman dan https://sellebeww.github.io/batchaman/. Private vulnerability reporting aktif. Pertanyaan manusia mengenai ahli, dapur pilot, perangkat, retensi dan SOP tetap terbuka.
