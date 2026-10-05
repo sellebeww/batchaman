@@ -20,3 +20,8 @@
 - D018: Demo Pages memakai database terpisah dan label DEMO permanen. Seed sintetis tidak menggantikan data operasional dan tidak ada data dapur nyata di bundle/repo.
 - D019: Titik penerima ditampilkan langsung per tujuan pada layar catat; tidak memerlukan dropdown tujuan terpisah. Dengan begitu tujuan kedua dan seterusnya juga memenuhi dua ketukan (pilih titik+tujuan, konfirmasi). Tes komponen memeriksa ini secara eksplisit.
 - D020: Audit CI menemukan GHSA-82fw-gwwq-j7x9 pada Vitest 3.2.7/@vitest/mocker (alat pengembangan, tidak dibundel ke aplikasi). Versi Vitest dan coverage dinaikkan bersama ke 4.1.11 sesuai perbaikan upstream; tidak mengabaikan advisori. Registry Yarn dipakai sementara saat registry npm lokal timeout; integritas paket tetap diverifikasi pnpm.
+- D021: Penyegaran visual mempertahankan alur dua ketukan dan peringatan tetap. Font sistem, ikon SVG lokal dan logo PNG hasil generasi dibundel offline; tidak menambah dependensi runtime. Lihat UI_REFRESH.md.
+- D022: Cadangan membaca snapshot IndexedDB terbaru dan hanya menandai lastBackup jika device/head belum berubah. Timestamp cadangan dan kesesuaian metrik terhadap event divalidasi saat pemulihan.
+- D023: Bendera jam perangkat menggunakan riwayat seluruh batch pada perangkat yang sama, sedangkan bendera terlambat/urutan tetap dibatasi pada tujuan terkait. Duplikat identik tidak mengubah hasil.
+- D024: Proyeksi ledger memakai indeks Map/Set sementara untuk menghindari pencarian berulang; format disk dan verifikasi rantai tetap sama.
+- D025: Aplikasi menolak boot di iframe sebagai pertahanan tambahan pada hosting statis. CSP frame-ancestors memerlukan header HTTP; keterbatasan dan anjuran host operasional dicatat dalam SECURITY_REVIEW.md.

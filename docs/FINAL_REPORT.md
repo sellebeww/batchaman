@@ -18,9 +18,9 @@
 
 ## Hasil terukur
 
-101 tes lokal lulus. Cakupan core (Vitest 4.1.11): 99,11% baris, 95,41% cabang, 100% fungsi. E2E operasional 9/9 dan DEMO 1/1 lulus; axe tidak menemukan pelanggaran serius/kritis di semua layar utama. CPU 6× dan layar 320px diuji. JavaScript awal 142,79KiB gzip (batas 200KiB). 39 lisensi produksi diperiksa. Audit dependensi setelah pembaruan Vitest: nol advisori pada 2026-10-05.
+108 tes lokal lulus. Cakupan core (Vitest 4.1.11): 99,15% baris, 95,57% cabang, 100% fungsi. 14 skenario E2E operasional terverifikasi (12 pada rangkaian awal, dua timeout lulus setelah perbaikan simulasi/timeout tes); DEMO 1/1 pada rilis sebelumnya; axe tidak menemukan pelanggaran serius/kritis di semua layar utama. CPU 6× dan layar 320px diuji. JavaScript awal 144,14KiB gzip (batas 200KiB). 39 lisensi produksi diperiksa. Audit dependensi setelah pembaruan Vitest: nol advisori pada 2026-10-05.
 
-Lighthouse 13.5.0 mobile: Performance **95**, Accessibility **100** pada CI rilis; commit dan sumber pengukuran dicatat di [bukti JSON](evidence/lighthouse-summary.json). Kategori skor PWA modern tidak tersedia; manifest, service worker dan alur offline diuji langsung. Source `2a39fec` lulus [CI final](https://github.com/sellebeww/batchaman/actions/runs/37306919230) dan deployment. [Verifikasi URL publik](evidence/public-demo-verification.json) berhasil: HTTP 200, enam batch sintetis, banner DEMO, service worker aktif, reload offline, tanpa galat browser. Bukti dan batas pengukuran: [QUALITY.md](QUALITY.md).
+Lighthouse 13.5.0 mobile: Performance **95**, Accessibility **100** pada CI rilis sebelum penyegaran UI; pengukuran ulang berjalan. commit dan sumber pengukuran dicatat di [bukti JSON](evidence/lighthouse-summary.json). Kategori skor PWA modern tidak tersedia; manifest, service worker dan alur offline diuji langsung. Source `2a39fec` lulus [CI final](https://github.com/sellebeww/batchaman/actions/runs/37306919230) dan deployment. [Verifikasi URL publik](evidence/public-demo-verification.json) berhasil: HTTP 200, enam batch sintetis, banner DEMO, service worker aktif, reload offline, tanpa galat browser. Bukti dan batas pengukuran: [QUALITY.md](QUALITY.md).
 
 ## AC-01–15
 

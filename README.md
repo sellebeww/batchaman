@@ -1,5 +1,7 @@
 # BatchAman
 
+<img src="apps/web/public/brand/batchaman-mark.png" alt="Logo BatchAman: wadah makanan dan jejak perjalanan" width="88" height="88" />
+
 > **Ambang batas belum diverifikasi oleh ahli. Jangan dipakai sebagai satu-satunya dasar keputusan keamanan pangan.**
 >
 > Aplikasi bukan pengganti SOP resmi, SLHS, atau pengawasan petugas. Ini alat bantu dapur gratis, bukan produk untuk kontrak pemerintah sebelum validasi lapangan. Tidak pernah memberi status makanan “aman” atau “tidak aman”.
@@ -85,3 +87,5 @@ Workflow `.github/workflows/pages.yml` membangun mode DEMO dengan penyimpanan te
 BatchAman is an Indonesian, offline-first food-batch recordkeeping PWA. It tracks timestamps and optional temperatures across kitchen, transport and multiple destinations. Default thresholds are **unverified placeholders**; the app makes no food-safety determination and does not replace official procedures or professional supervision. Data stays on the device, with local CSV/JSON export, a tamper-evident (not tamper-proof) hash chain, and no backend or telemetry. Field validation is required before production claims or government contracting.
 
 Apache-2.0. Lihat [CONTRIBUTING.md](CONTRIBUTING.md) dan [SECURITY.md](SECURITY.md).
+
+Pembaruan tampilan dan identitas: [UI_REFRESH.md](docs/UI_REFRESH.md). Temuan keamanan, perbaikan, dan risiko tersisa: [SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md).

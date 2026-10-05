@@ -22,3 +22,7 @@ JSON impor tidak dipercaya: ukuran dibatasi, schema divalidasi, foreign key dan 
 Rantai log adalah satu urutan global per database, transaksi read-write mencegah dua tab memakai kepala rantai yang sama. Payload lengkap batch/kitchen/threshold ikut dirantai. Metrik tidak menjadi bukti integritas. Tanpa anchor eksternal, penghapusan ekor atau penulisan ulang seluruh rantai tidak bisa dideteksi; kepala dan jumlah di backup hanya mendeteksi kerusakan tak disengaja.
 
 Antarmuka SyncAdapter dan SensorAdapter hanya tipe untuk masa depan. Tidak ada implementasi atau network call. Hosting hanya mengirim aset statis dari origin yang sama.
+
+## Penyegaran UI dan review lanjutan
+
+Identitas dan komponen visual menggunakan aset lokal tanpa dependensi baru. Proyeksi ledger memakai indeks Map/Set sementara, bukan tabel mutable tambahan. Pemeriksaan perangkat untuk anomali waktu menggunakan log lintas batch. Cadangan mengambil snapshot langsung dari transaksi penyimpanan dan tidak menandai catatan baru yang belum masuk unduhan. Lihat UI_REFRESH.md dan SECURITY_REVIEW.md untuk bukti serta batasan.

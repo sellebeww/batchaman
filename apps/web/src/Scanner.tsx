@@ -59,6 +59,8 @@ export default function Scanner({
           if (disposed) controls.stop();
         }
       } catch {
+        stream?.getTracks().forEach((track) => track.stop());
+        controls?.stop();
         if (!disposed) setError(t.cameraError);
       }
     };

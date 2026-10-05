@@ -146,25 +146,31 @@ export function activeEvents(events: BatchEvent[], revoked: readonly string[] = 
 }
 export type QualityFlag = 'DIISI_BELAKANGAN' | 'URUTAN_ANEH' | 'JAM_PERANGKAT_MENCURIGAKAN';
 export type TimeStatus = 'OK' | 'PERHATIAN' | 'MELEWATI_BATAS' | 'UNKNOWN' | 'NO_RULE';
-export function flagsFor(events: BatchEvent[], p: Threshold, now: string): QualityFlag[] {
+export function flagsFor(
+  events: BatchEvent[],
+  p: Threshold,
+  now: string,
+  deviceHistory = events,
+): QualityFlag[] {
   const flags = new Set<QualityFlag>();
   const previousDevice = new Map<string, number>();
+  const clockJumps = new Set<string>();
+  for (const event of new Map(deviceHistory.map((event) => [event.id, event])).values()) {
+    const recorded = Date.parse(event.recordedAt),
+      previous = previousDevice.get(event.deviceId);
+    if (previous !== undefined && (recorded < previous || recorded - previous > 86400000))
+      clockJumps.add(event.id);
+    previousDevice.set(event.deviceId, recorded);
+  }
   const previousRoute = new Map<string, { time: number; rank: number }>();
   const nowMs = Date.parse(now);
   if (!Number.isFinite(nowMs)) throw new Error('Invalid now');
   for (const e of events) {
     const occurred = Date.parse(e.occurredAt),
-      recorded = Date.parse(e.recordedAt),
-      prev = previousDevice.get(e.deviceId);
+      recorded = Date.parse(e.recordedAt);
     if (recorded - occurred > p.realtimeToleranceMin * 60000) flags.add('DIISI_BELAKANGAN');
-    if (
-      recorded < occurred ||
-      occurred > nowMs ||
-      recorded > nowMs ||
-      (prev !== undefined && (recorded < prev || recorded - prev > 86400000))
-    )
+    if (recorded < occurred || occurred > nowMs || recorded > nowMs || clockJumps.has(e.id))
       flags.add('JAM_PERANGKAT_MENCURIGAKAN');
-    previousDevice.set(e.deviceId, recorded);
     const key = e.batchId + ':' + (e.dropId ?? '*'),
       prior = previousRoute.get(key),
       rank = EVENT_TYPES.indexOf(e.type);
@@ -196,7 +202,7 @@ export function calculate(
   const e = activeEvents(events, revoked).filter(
     (e) => e.batchId === batchId && (e.dropId === undefined || e.dropId === dropId),
   );
-  const flags = new Set(flagsFor(e, p, now));
+  const flags = new Set(flagsFor(e, p, now, events));
   const ordered = [...e].sort(
     (a, b) =>
       Date.parse(a.occurredAt) - Date.parse(b.occurredAt) ||

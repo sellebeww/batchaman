@@ -29,3 +29,11 @@ Lulus berarti bukti otomatis yang tercantum, bukan validasi lapangan. Tes browse
 - Empat properti fast-check + properti midpoint dengan suhu endpoint acak.
 
 Lihat QUALITY.md untuk angka eksekusi, batasan Lighthouse dan lisensi. Bukti otomatis bunyi/getar tidak menggantikan validasi volume, lingkungan bising, dan kemampuan perangkat nyata.
+
+## Bukti tambahan setelah penyegaran UI
+
+- Alur dua ketukan, seluruh AC dan scanner offline dijalankan kembali setelah perubahan tampilan.
+- `UI: attention filters, local logo and 48px mobile navigation` memeriksa filter nyata, aset logo, lebar/tinggi tombol navigasi dan overflow 320px.
+- `security: backup reads latest data written by another tab` dan unit `backup acknowledgement never hides writes made after the downloaded snapshot` memperkuat AC-08.
+- `clock rollback between different batches on the same device remains visible` memperkuat deteksi jam tanpa membawa flag perangkat lain.
+- Validasi metrik, kamera berhenti saat gagal, XSS/CSP, penolakan iframe dan pemulihan integritas dirinci dalam SECURITY_REVIEW.md.

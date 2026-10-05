@@ -4,6 +4,7 @@ import { defaultThresholds, signEvent } from '@batchaman/core';
 import {
   append,
   backupJSON,
+  markBackupExported,
   BatchDB,
   createBatch,
   csv,
@@ -166,3 +167,44 @@ test('empty state valid and truncated backup detected by count/head', () => {
   a.count = 1;
   expect(() => parseBackup(JSON.stringify(a))).toThrow();
 });
+test('backup acknowledgement never hides writes made after the downloaded snapshot', async () => {
+  const snapshot = await readState(db);
+  await record(input(), at(1), 1000, db);
+  const stale = await markBackupExported(snapshot, at(2), db);
+  expect(stale.lastBackup).toBeNull();
+  expect(project(stale).events).toHaveLength(1);
+  const fresh = await markBackupExported(stale, at(3), db);
+  expect(fresh.lastBackup).toBe(at(3));
+});
+test('restore rejects malformed backup timestamps without replacing local data', async () => {
+  const before = await readState(db);
+  const file = JSON.parse(backupJSON(before, 'w', 'p'));
+  file.state.lastBackup = 'not-a-date';
+  await expect(restoreBackup(JSON.stringify(file), db)).rejects.toThrow();
+  expect(await readState(db)).toEqual(before);
+});
+test.each(['lagMinutes', 'recordedAt'] as const)(
+  'restore rejects inconsistent %s even when ledger hashes match',
+  async (field) => {
+    const state = await readState(db);
+    const event = signEvent(
+      { ...input(), id: 'metric-test', deviceId: state.deviceId, recordedAt: at(60) },
+      '',
+    );
+    const metric = {
+      eventId: event.id,
+      batchId,
+      durationMs: 1000,
+      lagMinutes: 1,
+      recordedAt: at(60),
+    };
+    expect(() =>
+      append(state, {
+        kind: 'EVENT',
+        event,
+        metric: { ...metric, [field]: field === 'lagMinutes' ? 0 : at(0) },
+      }),
+    ).toThrow();
+    expect(project(await readState(db)).events).toHaveLength(0);
+  },
+);

@@ -9,3 +9,5 @@ Sertakan versi/commit, browser/OS, langkah reproduksi dengan data sintetis, damp
 Model ancaman: input JSON/CSV rusak, manipulasi event, XSS, kehilangan data perangkat, formula spreadsheet, dan risiko dependency. CSP tanpa skrip eksternal/eval, aset/font lokal, validasi strict dan relasi, transaksi atomik, serta hash chain membantu membatasi risiko. Tidak ada login, enkripsi perangkat oleh aplikasi, waktu tepercaya, atau anchor hash eksternal; baca LIMITATIONS.md. Perangkat yang dikuasai penyerang berada di luar jaminan integritas.
 
 CI wajib audit dependensi dan lisensi. Timeout audit tidak boleh dilaporkan sebagai tidak ada kerentanan. Pengelola wajib menilai advisori baru, mengunci upgrade, dan menjalankan ulang tes offline serta core.
+
+Review lanjutan beserta temuan yang diperbaiki, tes adversarial dan risiko residual tersedia di [docs/SECURITY_REVIEW.md](docs/SECURITY_REVIEW.md). Tidak ada klaim aplikasi sepenuhnya bebas kerentanan. Status keamanan perangkat lunak tidak memverifikasi keamanan pangan.

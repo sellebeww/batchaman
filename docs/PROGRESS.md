@@ -91,3 +91,11 @@ Fase 0–8 telah diimplementasikan; kualitas otomatis dan deployment pertama lul
 - [Deployment 37307143572](https://github.com/sellebeww/batchaman/actions/runs/37307143572) sukses, termasuk 1 tes DEMO. URL publik diverifikasi offline di 320px: enam batch, tombol langsung tujuan kedua, SW aktif, tanpa galat browser.
 - Bukti JSON disimpan di `docs/evidence/`; fase perangkat lunak 0–8 selesai. Commit setelah source ini hanya memperbarui bukti/dokumentasi.
 - Langkah manusia berikutnya: verifikasi ambang/SOP oleh ahli, izin dapur pilot, prosedur perpindahan perangkat, uji perangkat/termometer/printer dan cadangan, lalu pilot dua minggu. Lihat FINAL_REPORT.md dan FIELD_TEST.md.
+
+## Penyegaran UI dan audit lanjutan — berjalan
+
+- Logo PNG hasil generasi, ikon lokal, warna/typografi baru, ringkasan/filter dasbor, progres kartu, navigasi bawah dan link lewati navigasi telah diterapkan. Tidak ada dependensi runtime baru.
+- Perbaikan: cadangan lintas tab, penanda snapshot, validasi timestamp/metrik, pembersihan view saat integritas gagal, kamera dilepas saat gagal, deteksi jam antarbatch, penghalang iframe, dan indeks proyeksi ledger.
+- Lokal: 108 tes lulus; core 99,15% baris / 95,57% cabang. Bundle 144,14KiB gzip; audit ulang nol advisori. 14 skenario browser terverifikasi; dua timeout lulus saat diulang setelah simulasi izin eksplisit dan timeout lebih panjang khusus axe CPU 6×. CI/deployment berikutnya mengulang rangkaian penuh.
+- Pengukuran lokal satu kali 168 batch/896 event: project 271ms sebelum → 89ms sesudah. Bukan benchmark perangkat Android dan bukan jaminan latensi.
+- Berikutnya: selesaikan 14 tes browser, ukur Lighthouse melalui CI, perbarui DEMO dan verifikasi offline pada URL publik. Lihat UI_REFRESH.md dan SECURITY_REVIEW.md.

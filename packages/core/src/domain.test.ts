@@ -198,6 +198,26 @@ describe('quality AC-02', () => {
       ),
     ).toContain('JAM_PERANGKAT_MENCURIGAKAN'));
   test('normal no flags', () => expect(flagsFor(full(), p(), at(80))).toEqual([]));
+  test('clock rollback between different batches on the same device remains visible', () => {
+    const history = [
+      ev('COOK_DONE', 30, undefined, { batchId: 'other', id: 'other-event' }),
+      ev('COOK_DONE', 0),
+    ];
+    expect(calc(history, at(60)).flags).toContain('JAM_PERANGKAT_MENCURIGAKAN');
+    expect(calc(history, at(60)).dangerMinutes).toBe(60);
+  });
+  test('clock history does not transfer unrelated devices or late-entry flags to a batch', () => {
+    const history = [
+      ev('COOK_DONE', 0, undefined, {
+        batchId: 'other',
+        id: 'other-event',
+        deviceId: 'other-device',
+        recordedAt: at(30),
+      }),
+      ev('COOK_DONE', 0),
+    ];
+    expect(calc(history, at(60)).flags).toEqual([]);
+  });
 });
 describe('schemas and time', () => {
   test.each([-31, 121, NaN, Infinity])('reject implausible temp %s', (temp) =>

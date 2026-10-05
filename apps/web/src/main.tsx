@@ -5,6 +5,10 @@ import { localDate } from '@batchaman/core';
 import { t } from './i18n/id';
 import './styles.css';
 async function boot() {
+  if (window.top !== window.self) {
+    document.getElementById('root')!.textContent = t.embeddedBlocked + ' ' + t.warning;
+    return;
+  }
   if (import.meta.env.VITE_DEMO === 'true') {
     try {
       const state = await readState();

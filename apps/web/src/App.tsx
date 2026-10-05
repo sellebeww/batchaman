@@ -32,6 +32,7 @@ import {
 import {
   append,
   backupJSON,
+  markBackupExported,
   createBatch,
   mutate,
   newState,
@@ -45,6 +46,7 @@ import {
   type View,
 } from './store';
 import { t } from './i18n/id';
+import { Icon } from './Icon';
 import { download, metricsCSV, reportCSV } from './reports';
 import { enableAudio, notifyWarning } from './alerts';
 const Scanner = lazy(() => import('./Scanner'));
@@ -278,6 +280,7 @@ export default function App() {
     [online, setOnline] = useState(navigator.onLine),
     [date, setDate] = useState(''),
     [query, setQuery] = useState(''),
+    [batchFilter, setBatchFilter] = useState<'all' | 'attention' | 'incomplete'>('all'),
     [sound, setSound] = useState(false),
     [undo, setUndo] = useState<{ id: string; deadline: number } | null>(null),
     [scan, setScan] = useState(false),
@@ -299,6 +302,8 @@ export default function App() {
       apply(await readState());
       setError('');
     } catch {
+      setView(emptyView());
+      setState(newState());
       setError(t.hashInvalid);
       setScreen('data');
     } finally {
@@ -470,6 +475,15 @@ export default function App() {
           ...view.drops.filter((d) => d.batchId === b.id).map((d) => d.recipientLabel),
         ].some((s) => s.toLowerCase().includes(query.toLowerCase()))),
   );
+  const batchStatus = (b: Batch) =>
+    aggregate(view.drops.filter((d) => d.batchId === b.id).map((d) => results.get(d.id)!));
+  const needsAttention = (b: Batch) =>
+    ['PERHATIAN', 'MELEWATI_BATAS'].includes(batchStatus(b).timeStatus);
+  const visibleBatches = filtered.filter(
+    (b) =>
+      batchFilter === 'all' ||
+      (batchFilter === 'attention' ? needsAttention(b) : batchStatus(b).incomplete),
+  );
   const exportBatches = (batches: Batch[]) =>
     download('batchaman-ringkasan.csv', reportCSV(view, batches, now), 'text/csv;charset=utf-8');
   const persist = async () => {
@@ -481,12 +495,13 @@ export default function App() {
     }
   };
   const doBackup = async () => {
+    const snapshot = await readState();
     download(
       'batchaman-cadangan.json',
-      backupJSON(state, t.warning, t.privacy),
+      backupJSON(snapshot, t.warning, t.privacy),
       'application/json',
     );
-    const s = await mutate((s) => ({ ...s, lastBackup: nowISO() }));
+    const s = await markBackupExported(snapshot, nowISO());
     apply(s);
   };
   const synthetic = async () =>
@@ -527,43 +542,74 @@ export default function App() {
     );
   return (
     <>
+      <a className="skip-link" href="#main-content">
+        {t.skip}
+      </a>
       <header className="topbar">
         <div className="brand">
-          <span className="brandmark" aria-hidden="true">
-            B
-          </span>
+          <img
+            className="brandmark"
+            src="./brand/batchaman-mark.png"
+            alt=""
+            width="48"
+            height="48"
+          />
           <div>
             <b>{t.app}</b>
             <small>{kitchen?.name ?? t.tagline}</small>
           </div>
         </div>
-        <span className="connection">● {online ? t.online : t.offline}</span>
+        <span className={'connection ' + (online ? '' : 'is-offline')}>
+          <span className="connection-dot" aria-hidden="true" />
+          {online ? t.online : t.offline}
+        </span>
       </header>
       <div className="shell">
         <aside className="sidebar no-print">
-          <p className="eyebrow">{t.tagline}</p>
+          <p className="eyebrow">{t.workspace}</p>
+          {kitchen && (
+            <div className="kitchen-badge">
+              <span>{kitchen.code.slice(0, 2)}</span>
+              <div>
+                <strong>{kitchen.name}</strong>
+                <small>
+                  {kitchen.code} · {t.zones[kitchen.timezone]}
+                </small>
+              </div>
+            </div>
+          )}
           <nav aria-label={t.app}>
-            {(['today', 'create', 'trace', 'data', 'about'] as const).map((s, i) => (
+            {(['today', 'create', 'trace', 'data', 'about'] as const).map((s) => (
               <button
                 key={s}
-                aria-current={screen === s ? 'page' : undefined}
+                aria-current={
+                  screen === s || (s === 'today' && ['detail', 'confirm', 'label'].includes(screen))
+                    ? 'page'
+                    : undefined
+                }
                 onClick={() => {
                   if (s === 'today') {
                     setDate('');
                     setQuery('');
+                    setBatchFilter('all');
                   }
                   go(s);
                 }}
                 disabled={!kitchen && (s === 'create' || s === 'trace')}
               >
-                <span aria-hidden="true">{['◷', '＋', '⌕', '▣', 'ⓘ'][i]}</span>
+                <Icon name={s} />
                 {t[s]}
               </button>
             ))}
           </nav>
-          <p className="sidebar-note">{t.privacy}</p>
+          <div className="sidebar-note">
+            <Icon name="local" />
+            <strong>{t.localTitle}</strong>
+            <p>{t.localHint}</p>
+            <small>{t.privacy}</small>
+          </div>
         </aside>
-        <main ref={heading} tabIndex={-1} className="content">
+        <main id="main-content" ref={heading} tabIndex={-1} className={'content screen-' + screen}>
           {warning && (
             <aside className="warning" role="note">
               <b aria-hidden="true">!</b>
@@ -603,15 +649,6 @@ export default function App() {
               )}
             </div>
           )}
-          {kitchen &&
-            (!state.lastBackup ||
-              localDate(state.lastBackup, kitchen.timezone) !== localDate(now, kitchen.timezone)) &&
-            screen !== 'label' && (
-              <div className="backup-reminder no-print">
-                <span>{t.backupReminder}</span>
-                <button onClick={() => void run(doBackup)}>{t.backup}</button>
-              </div>
-            )}
           {!kitchen && screen !== 'about' && screen !== 'data' ? (
             <>
               <KitchenForm
@@ -630,16 +667,57 @@ export default function App() {
             <>
               {(screen === 'today' || screen === 'trace') && (
                 <>
-                  <div className="page-heading">
+                  <div
+                    className={'page-heading ' + (screen === 'today' ? 'dashboard-heading' : '')}
+                  >
                     <div>
-                      <p className="eyebrow">{kitchen?.code}</p>
+                      <p className="eyebrow">
+                        {kitchen?.code} · {kitchen && t.zones[kitchen.timezone]}
+                      </p>
                       <h1>{screen === 'today' ? t.today : t.summary}</h1>
+                      <p className="heading-caption">
+                        {screen === 'today' ? t.dashboardIntro : t.scanHint}
+                      </p>
                     </div>
                     {screen === 'today' && (
                       <button className="primary" onClick={() => go('create')}>
-                        + {t.create}
+                        <Icon name="create" /> {t.create}
                       </button>
                     )}
+                  </div>
+                  <section className="stats-grid" aria-label={t.summaryLabel}>
+                    <div className="stat-card">
+                      <span className="stat-icon">
+                        <Icon name="tray" />
+                      </span>
+                      <span>{t.totalBatches}</span>
+                      <strong>{filtered.length}</strong>
+                      <small>{t.summaryLabel}</small>
+                    </div>
+                    <div className="stat-card">
+                      <span className="stat-icon">
+                        <Icon name="pin" />
+                      </span>
+                      <span>{t.totalPortions}</span>
+                      <strong>
+                        {filtered.reduce((n, b) => n + b.portions, 0).toLocaleString('id-ID')}
+                      </strong>
+                      <small>{t.unitsPortions}</small>
+                    </div>
+                    <div className="stat-card stat-attention">
+                      <span className="stat-icon">
+                        <Icon name="warning" />
+                      </span>
+                      <span>{t.needAttention}</span>
+                      <strong>{filtered.filter(needsAttention).length}</strong>
+                      <small>{t.attentionHint}</small>
+                    </div>
+                  </section>
+                  <div className="section-heading">
+                    <div>
+                      <p className="eyebrow">{t.dashboardHint}</p>
+                      <h2>{t.batchList}</h2>
+                    </div>
                   </div>
                   <div className="panel filters">
                     <Field label={t.date}>
@@ -661,13 +739,28 @@ export default function App() {
                       {screen === 'today' ? t.exportDaily : t.exportCsv}
                     </button>
                   </div>
+                  <div className="filter-tabs no-print" role="group" aria-label={t.batchList}>
+                    {(['all', 'attention', 'incomplete'] as const).map((filter) => (
+                      <button
+                        key={filter}
+                        aria-pressed={batchFilter === filter}
+                        onClick={() => setBatchFilter(filter)}
+                      >
+                        {filter === 'all'
+                          ? t.allFilter
+                          : filter === 'attention'
+                            ? t.attentionFilter
+                            : t.incompleteFilter}
+                      </button>
+                    ))}
+                  </div>
                   <div className="batch-grid">
-                    {filtered.length ? (
-                      filtered.map((b) => {
+                    {visibleBatches.length ? (
+                      visibleBatches.map((b) => {
                         const ds = view.drops.filter((d) => d.batchId === b.id),
                           status = aggregate(ds.map((d) => results.get(d.id)!));
                         return (
-                          <article className="batch-card" key={b.id}>
+                          <article className={'batch-card card-' + status.timeStatus} key={b.id}>
                             <div className="card-top">
                               <span className="code">{b.shortCode}</span>
                               <span>
@@ -679,26 +772,57 @@ export default function App() {
                                 {b.menuName}
                               </button>
                             </h2>
-                            <p>{ds.map((d) => d.recipientLabel).join(' · ')}</p>
+                            <p className="card-destinations">
+                              <Icon name="pin" />
+                              {ds.map((d) => d.recipientLabel).join(' · ')}
+                            </p>
                             <p className={'status-line ' + status.timeStatus}>
+                              <Icon name={needsAttention(b) ? 'warning' : 'clock'} />
                               {t.timeNames[status.timeStatus]}
                             </p>
-                            <p>{status.incomplete ? t.incomplete : t.complete}</p>
+                            <div className="card-progress">
+                              <span>{status.incomplete ? t.incomplete : t.complete}</span>
+                              <small>
+                                {currentEvents.filter((e) => e.batchId === b.id).length}/
+                                {3 + ds.length * 2} {t.recordedPoints}
+                              </small>
+                            </div>
+                            <div className="journey-track" aria-hidden="true">
+                              {Array.from({ length: 3 + ds.length * 2 }, (_, i) => (
+                                <i
+                                  key={i}
+                                  className={
+                                    i < currentEvents.filter((e) => e.batchId === b.id).length
+                                      ? 'filled'
+                                      : ''
+                                  }
+                                />
+                              ))}
+                            </div>
                             <button className="primary" onClick={() => openBatch(b)}>
-                              {t.record} →
+                              {t.record} <Icon name="arrow" />
                             </button>
                           </article>
                         );
                       })
                     ) : (
-                      <div className="panel">
-                        <h2>{t.empty}</h2>
-                        <p>{t.emptyHint}</p>
+                      <div className="panel empty-state">
+                        <Icon name="tray" />
+                        <h2>{batchFilter === 'all' ? t.empty : t.noMatch}</h2>
+                        <p>{batchFilter === 'all' ? t.emptyHint : t.noMatchHint}</p>
                       </div>
                     )}
                   </div>
-                  <section className="panel no-print">
-                    <h2>{t.scan}</h2>
+                  <section className="panel scan-panel no-print">
+                    <div className="scan-intro">
+                      <span className="scan-symbol">
+                        <Icon name="qr" />
+                      </span>
+                      <div>
+                        <h2>{t.quickAccess}</h2>
+                        <p>{t.scanHint}</p>
+                      </div>
+                    </div>
                     <form
                       className="row"
                       onSubmit={(e) => {
@@ -750,7 +874,14 @@ export default function App() {
                     </button>
                   </div>
                   <section className="panel no-print">
-                    <h2>{t.choosePoint}</h2>
+                    <div className="section-heading">
+                      <div>
+                        <p className="eyebrow">{t.record}</p>
+                        <h2>{t.choosePoint}</h2>
+                        <p>{t.startedHint}</p>
+                      </div>
+                      <Icon name="tray" />
+                    </div>
                     <div className="point-grid">
                       {[
                         ...EVENT_TYPES.slice(0, 3).map((type) => ({ type, drop: undefined })),
@@ -1000,7 +1131,14 @@ export default function App() {
               )}
               {screen === 'data' && (
                 <>
-                  <h1>{t.data}</h1>
+                  <div className="page-heading">
+                    <div>
+                      <p className="eyebrow">{t.localTitle}</p>
+                      <h1>{t.data}</h1>
+                      <p className="heading-caption">{t.dataIntro}</p>
+                    </div>
+                    <Icon name="data" />
+                  </div>
                   <section className="panel stack">
                     <p>{t.privacy}</p>
                     <p>{t.storageHint}</p>
@@ -1097,7 +1235,14 @@ export default function App() {
               )}
               {screen === 'about' && (
                 <section className="panel">
-                  <h1>{t.about}</h1>
+                  <div className="about-brand">
+                    <img src="./brand/batchaman-mark.png" alt="" width="80" height="80" />
+                    <div>
+                      <p className="eyebrow">{t.app}</p>
+                      <h1>{t.about}</h1>
+                    </div>
+                  </div>
+                  <p className="heading-caption">{t.aboutIntro}</p>
                   <ul className="about-list">
                     {t.aboutItems.map((item) => (
                       <li key={item}>{item}</li>
@@ -1110,6 +1255,18 @@ export default function App() {
               )}
             </>
           )}
+          {kitchen &&
+            (!state.lastBackup ||
+              localDate(state.lastBackup, kitchen.timezone) !== localDate(now, kitchen.timezone)) &&
+            screen !== 'label' && (
+              <div className="backup-reminder no-print">
+                <div>
+                  <strong>{t.backupTitle}</strong>
+                  <span>{t.backupReminder}</span>
+                </div>
+                <button onClick={() => void run(doBackup)}>{t.backup}</button>
+              </div>
+            )}
           <footer>{t.footer}</footer>
         </main>
       </div>

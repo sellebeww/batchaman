@@ -55,7 +55,7 @@ const stateSchema = z.strictObject({
   version: z.literal(1),
   deviceId: z.string().min(1),
   entries: z.array(entrySchema).max(100000),
-  lastBackup: z.string().nullable(),
+  lastBackup: z.iso.datetime().nullable(),
 });
 export type State = z.infer<typeof stateSchema>;
 export interface View {
@@ -96,6 +96,12 @@ export function project(state: State): View {
     metrics: [],
     resolutions: [],
   };
+  const batches = new Map<string, Batch>();
+  const drops = new Map<string, Drop>();
+  const events = new Map<string, BatchEvent>();
+  const currentPoints = new Map<string, BatchEvent>();
+  const shortCodes = new Set<string>();
+  const pointKey = (e: BatchEvent) => JSON.stringify([e.batchId, e.dropId ?? null, e.type]);
   let prev = '';
   for (const entry of state.entries) {
     if (entry.prevHash !== prev || entry.hash !== hashRecord(prev, entry.payload))
@@ -111,48 +117,54 @@ export function project(state: State): View {
       if (
         !v.kitchen ||
         p.batch.kitchenId !== v.kitchen.id ||
-        v.batches.some((b) => b.id === p.batch.id || b.shortCode === p.batch.shortCode) ||
-        p.drops.some((d) => d.batchId !== p.batch.id || v.drops.some((x) => x.id === d.id)) ||
+        batches.has(p.batch.id) ||
+        shortCodes.has(p.batch.shortCode) ||
+        p.drops.some((d) => d.batchId !== p.batch.id || drops.has(d.id)) ||
         new Set(p.drops.map((d) => d.id)).size !== p.drops.length ||
         p.drops.reduce((n, d) => n + d.portions, 0) !== p.batch.portions
       )
         throw new StoreError('relation');
       v.batches.push(p.batch);
       v.drops.push(...p.drops);
+      batches.set(p.batch.id, p.batch);
+      shortCodes.add(p.batch.shortCode);
+      for (const drop of p.drops) drops.set(drop.id, drop);
     }
     if (p.kind === 'EVENT') {
       const e = p.event;
       if (
-        !v.batches.some((b) => b.id === e.batchId) ||
-        (e.dropId && !v.drops.some((d) => d.id === e.dropId && d.batchId === e.batchId)) ||
-        v.events.some((x) => x.id === e.id) ||
+        !batches.has(e.batchId) ||
+        (e.dropId && drops.get(e.dropId)?.batchId !== e.batchId) ||
+        events.has(e.id) ||
         p.metric.eventId !== e.id ||
-        p.metric.batchId !== e.batchId
+        p.metric.batchId !== e.batchId ||
+        p.metric.recordedAt !== e.recordedAt ||
+        p.metric.lagMinutes !== (Date.parse(e.recordedAt) - Date.parse(e.occurredAt)) / 60000
       )
         throw new StoreError('relation');
-      const current = activeEvents(v.events, v.revoked).find(
-        (x) => x.batchId === e.batchId && x.dropId === e.dropId && x.type === e.type,
-      );
+      const current = currentPoints.get(pointKey(e));
       if (e.supersedes ? !current || current.id !== e.supersedes || !e.note?.trim() : !!current)
         throw new StoreError('correction');
       v.events.push(e);
       v.metrics.push(p.metric);
+      events.set(e.id, e);
+      currentPoints.set(pointKey(e), e);
     }
     if (p.kind === 'REVOKE') {
-      const e = v.events.find((e) => e.id === p.eventId);
+      const e = events.get(p.eventId);
       if (
         !e ||
         e.supersedes ||
-        v.revoked.includes(e.id) ||
-        !activeEvents(v.events, v.revoked).some((x) => x.id === e.id) ||
+        currentPoints.get(pointKey(e))?.id !== e.id ||
         Date.parse(p.at) - Date.parse(e.recordedAt) > 10000 ||
         Date.parse(p.at) < Date.parse(e.recordedAt)
       )
         throw new StoreError('undo');
       v.revoked.push(e.id);
+      currentPoints.delete(pointKey(e));
     }
     if (p.kind === 'RESOLVE') {
-      if (!v.batches.some((b) => b.id === p.batchId)) throw new StoreError('relation');
+      if (!batches.has(p.batchId)) throw new StoreError('relation');
       v.resolutions.push(p);
     }
   }
@@ -276,6 +288,18 @@ export function backupJSON(state: State, warning: string, privacy: string) {
     },
     null,
     2,
+  );
+}
+// Only acknowledge the exact snapshot downloaded; another tab may have written meanwhile.
+export async function markBackupExported(snapshot: State, now: string, database = db) {
+  z.iso.datetime().parse(now);
+  return mutate(
+    (current) =>
+      current.deviceId === snapshot.deviceId &&
+      current.entries.at(-1)?.hash === snapshot.entries.at(-1)?.hash
+        ? { ...current, lastBackup: now }
+        : current,
+    database,
   );
 }
 export function parseBackup(text: string): State {

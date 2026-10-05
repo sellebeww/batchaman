@@ -214,9 +214,14 @@ test('adversarial: no BarcodeDetector and camera denied retains manual fallback 
   page,
   context,
 }) => {
-  await page.addInitScript(() =>
-    Object.defineProperty(window, 'BarcodeDetector', { value: undefined }),
-  );
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'BarcodeDetector', { value: undefined });
+    Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+      value: async () => {
+        throw new DOMException('Synthetic camera denial', 'NotAllowedError');
+      },
+    });
+  });
   await onboard(page);
   await create(page);
   const code = await page.locator('.page-heading .code').textContent();
@@ -236,6 +241,7 @@ test('axe: onboarding, creation, confirmation and label; six-fold CPU slowdown',
   page,
   context,
 }) => {
+  test.slow(); // Multiple axe scans under deliberate 6x throttling need a larger suite timeout.
   const cdp = await context.newCDPSession(page);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: 6 });
   await page.goto('/');
@@ -276,4 +282,111 @@ test('synthetic screenshots and installability artifacts', async ({ page }) => {
   });
   expect(manifest.display).toBe('standalone');
   expect(manifest.icons.some((i: { sizes: string }) => i.sizes === '512x512')).toBe(true);
+});
+
+test('security: untrusted menu is text, never executable markup', async ({ page }) => {
+  await onboard(page);
+  await page.getByRole('button', { name: 'Buat batch', exact: true }).first().click();
+  const payload = '<img src=x onerror="window.__injected=1">';
+  await page.getByLabel('Nama menu').fill(payload);
+  await page.getByLabel('Label tujuan').fill('Tujuan sintetis');
+  await page.getByRole('button', { name: 'Buat batch', exact: true }).last().click();
+  await expect(page.getByRole('heading', { name: payload, exact: true })).toBeVisible();
+  expect(await page.evaluate(() => '__injected' in window)).toBe(false);
+  await expect(page.locator('img[src="x"]')).toHaveCount(0);
+  const blocked = await page.evaluate(async () => {
+    try {
+      await fetch('https://example.com/batchaman-test');
+      return false;
+    } catch {
+      return true;
+    }
+  });
+  expect(blocked).toBe(true);
+});
+
+test('security: backup reads latest data written by another tab', async ({ page, context }) => {
+  await onboard(page);
+  const other = await context.newPage();
+  await other.goto('/');
+  await create(other);
+  const downloaded = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Unduh cadangan JSON', exact: true }).click();
+  const path = await (await downloaded).path();
+  const file = JSON.parse(readFileSync(path!, 'utf8'));
+  expect(
+    file.state.entries.filter((e: { payload: { kind: string } }) => e.payload.kind === 'BATCH'),
+  ).toHaveLength(1);
+  await other.close();
+});
+
+test('UI: attention filters, local logo and 48px mobile navigation', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-10-05T04:00:00Z'));
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Coba dengan data sintetis' }).click();
+  await expect(page.locator('.batch-card')).toHaveCount(6);
+  await page.getByRole('button', { name: 'Peringatan waktu', exact: true }).click();
+  await expect(page.locator('.batch-card')).toHaveCount(1);
+  await expect(page.getByText('Menu sintetis 2 · late-delivery', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Belum lengkap', exact: true }).click();
+  await expect(
+    page.getByText('Tidak ada batch yang sesuai filter.', { exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Semua batch', exact: true }).click();
+  await expect(page.locator('.batch-card')).toHaveCount(6);
+  expect(
+    await page.locator('.brandmark').evaluate((img) => (img as HTMLImageElement).naturalWidth),
+  ).toBeGreaterThan(0);
+  for (const button of await page.locator('.sidebar nav button').all()) {
+    const box = await button.boundingBox();
+    expect(box!.width).toBeGreaterThanOrEqual(48);
+    expect(box!.height).toBeGreaterThanOrEqual(48);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('security: embedded app cannot expose recording controls', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => {
+    const frame = document.createElement('iframe');
+    frame.src = location.href;
+    frame.id = 'embedded-test';
+    document.body.append(frame);
+  });
+  const frame = page.frameLocator('#embedded-test');
+  await expect(frame.getByText(/Buka BatchAman langsung di tab browser/)).toBeVisible();
+  await expect(frame.getByRole('button')).toHaveCount(0);
+});
+
+test('security: integrity failure clears stale dashboard before recovery', async ({ page }) => {
+  await onboard(page);
+  await create(page);
+  await page.evaluate(async () => {
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.open('batchaman-v1');
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        const database = request.result;
+        const transaction = database.transaction('state', 'readwrite');
+        const store = transaction.objectStore('state');
+        const get = store.get('main');
+        get.onsuccess = () => {
+          const state = get.result;
+          state.entries[0].payload.kitchen.name = 'changed without hash';
+          store.put(state);
+        };
+        transaction.oncomplete = () => {
+          database.close();
+          resolve();
+        };
+        transaction.onerror = () => reject(transaction.error);
+      };
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await expect(page.getByRole('alert')).toContainText('Log tidak cocok');
+  await expect(page.getByRole('heading', { name: 'Menu Sintetis', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Buat batch', exact: true })).toBeDisabled();
+  await expect(page.getByLabel('Pulihkan cadangan JSON')).toBeVisible();
 });
