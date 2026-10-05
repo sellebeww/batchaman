@@ -83,3 +83,11 @@ Fase 0–8 telah diimplementasikan; kualitas otomatis dan deployment pertama lul
 - Audit menemukan dua advisori moderate alat tes; pembaruan Vitest menutup keduanya, audit ulang lokal nol advisori. CI mengulang seluruh gerbang pada commit perbaikan.
 - Regresi dua ketukan untuk tujuan kedua diperbaiki dan diuji. Laporan lengkap: FINAL_REPORT.md; matriks: ACCEPTANCE.md.
 - Berikutnya: konfirmasi CI/deployment perbaikan, lalu serahkan verifikasi ambang dan persiapan pilot kepada manusia.
+
+## Rilis terverifikasi — 2026-10-05
+
+- Source `2a39fec`: [CI 37306919230](https://github.com/sellebeww/batchaman/actions/runs/37306919230) sukses seluruh gerbang; 101 tes, 9 e2e, core 99,11% baris / 95,41% cabang.
+- Lighthouse mobile **95 Performance / 100 Accessibility**, JS awal **142,79KiB gzip**, audit **nol advisori** dari registry npm CI.
+- [Deployment 37307143572](https://github.com/sellebeww/batchaman/actions/runs/37307143572) sukses, termasuk 1 tes DEMO. URL publik diverifikasi offline di 320px: enam batch, tombol langsung tujuan kedua, SW aktif, tanpa galat browser.
+- Bukti JSON disimpan di `docs/evidence/`; fase perangkat lunak 0–8 selesai. Commit setelah source ini hanya memperbarui bukti/dokumentasi.
+- Langkah manusia berikutnya: verifikasi ambang/SOP oleh ahli, izin dapur pilot, prosedur perpindahan perangkat, uji perangkat/termometer/printer dan cadangan, lalu pilot dua minggu. Lihat FINAL_REPORT.md dan FIELD_TEST.md.

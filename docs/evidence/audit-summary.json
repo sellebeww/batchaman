@@ -1,6 +1,9 @@
 {
   "checkedAt": "2026-10-05",
-  "command": "pnpm audit --json --registry=https://registry.yarnpkg.com",
+  "sourceRun": "https://github.com/sellebeww/batchaman/actions/runs/37306919230",
+  "testedCommit": "2a39fecaa2489eee015385cf2a05908d63fbff05",
+  "command": "pnpm audit --audit-level high --json",
+  "registry": "default npm registry in GitHub Actions",
   "vitestVersion": "4.1.11",
   "result": {
     "actions": [],

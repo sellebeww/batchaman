@@ -14,3 +14,7 @@ Pengelola: buat repo, push main, aktifkan Pages dengan sumber GitHub Actions. Ak
 - Browser sungguhan memverifikasi HTTP 200, enam batch sintetis, label DEMO, service worker terkontrol dan reload offline; tidak ada page error.
 - Private vulnerability reporting aktif pada repo. Tidak ada data operasional yang dipublikasikan.
 - Commit perbaikan berikutnya hanya diterbitkan setelah CI sukses; SHA deployment terbaru dicatat di PROGRESS.md.
+
+## Rilis terbaru
+
+Source `2a39fecaa2489eee015385cf2a05908d63fbff05` lulus [CI](https://github.com/sellebeww/batchaman/actions/runs/37306919230) dan [deployment](https://github.com/sellebeww/batchaman/actions/runs/37307143572). Pemeriksaan langsung pada URL publik membuktikan HTTP 200, enam batch sintetis, tombol langsung per tujuan, service worker aktif dan reload offline tanpa galat browser. [Bukti JSON](evidence/public-demo-verification.json) merekam waktu dan commit. Perubahan dokumentasi setelahnya tidak mengubah bundle yang diuji.

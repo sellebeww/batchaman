@@ -1,0 +1,12 @@
+{
+  "url": "https://sellebeww.github.io/batchaman/",
+  "httpStatus": 200,
+  "testedCommit": "2a39fecaa2489eee015385cf2a05908d63fbff05",
+  "deploymentRun": "https://github.com/sellebeww/batchaman/actions/runs/37307143572",
+  "checkedAt": "2026-10-05T12:08:04.146Z",
+  "offlineBatchCount": 6,
+  "demo": true,
+  "serviceWorker": true,
+  "secondDestinationDirectButton": true,
+  "errors": []
+}
