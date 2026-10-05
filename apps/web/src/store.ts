@@ -76,7 +76,7 @@ export class BatchDB extends Dexie {
     this.version(1).stores({ state: 'id' });
   }
 }
-export const db = new BatchDB();
+export const db = new BatchDB(import.meta.env?.VITE_DEMO === 'true' ? 'batchaman-demo-v1' : 'batchaman-v1');
 export const newState = (deviceId = crypto.randomUUID()): State => ({
   version: 1,
   deviceId,

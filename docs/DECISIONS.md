@@ -12,3 +12,6 @@
 - D010: Duplikat titik aktif ditolak/dikembalikan sebagai catatan yang sama, bahkan setelah dua detik; pengulangan yang disengaja harus memakai koreksi. Urungkan koreksi tidak didukung agar tidak menghidupkan kembali sejarah secara ambigu.
 - D011: Bunyi default nonaktif agar tidak mengejutkan dapur. Pengguna dapat mengaktifkan; gesture mengaktifkan AudioContext. Banner dan getar tetap otomatis jika didukung.
 - D012: Label QR hanya memuat kode batch lokal. Penerima di perangkat lain membutuhkan cadangan yang dipindahkan dengan prosedur terkontrol; QR bukan sinkronisasi atau tautan publik.
+- D013: Apache-2.0 dipilih untuk lisensi permisif dengan grant paten eksplisit. MIT lebih ringkas tetapi tidak eksplisit soal paten; AGPL mewajibkan berbagi source untuk penggunaan jaringan dan dapat menambah friksi adopsi. Ini pilihan teknis/proyek, bukan nasihat hukum.
+- D014: Gerbang lisensi mengizinkan dual Unlicense OR Apache-2.0 dengan memilih opsi Apache-2.0. Daftar komponen disimpan tanpa path lokal.
+- D015: Lighthouse >=12 tidak memiliki kategori PWA. Performance/Accessibility tetap gerbang >=90; PWA diuji melalui manifest, kontrol SW, dan seluruh alur offline, tanpa mengarang skor.

@@ -54,3 +54,9 @@ Tidak ada klaim tes, cakupan, deployment atau skor performa sebelum pengukuran.
 - Audit advisori dan pemasangan Lighthouse lokal terhambat timeout registry. CI mengukur Lighthouse 13.5.0 mobile dan mengarsip bukti; belum mengklaim skor.
 - PWA Lighthouse modern tidak mempunyai kategori skor; diganti bukti installability/offline eksplisit, dijelaskan dalam QUALITY.md.
 - Pekerjaan dokumentasi/kit pilot tidak bergantung jaringan, dilanjutkan sambil menyiapkan pengukuran CI.
+
+## Fase 7 — dokumentasi selesai, publikasi menunggu push/CI
+- README Indonesia + English, screenshot sintetis, Apache-2.0, panduan kontribusi, perilaku, keamanan, changelog, domain, ambang, batasan, template issue/PR tersedia.
+- Mode DEMO seed otomatis dan database terpisah; Pages hanya deploy setelah CI main sukses.
+- `pnpm check` tetap lulus setelah bootstrap demo. URL akan dicatat setelah publikasi nyata, bukan sekadar workflow.
+- Berikutnya: kit pilot/analisis CSV, lalu validasi paket akhir dan deployment.
